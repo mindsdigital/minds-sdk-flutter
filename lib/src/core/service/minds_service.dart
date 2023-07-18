@@ -27,6 +27,14 @@ class MindsService {
     this._enrollmentVerifyUsecase,
   );
 
+  Future<BiometricsResponse> executeProcess(
+      {required ProcessType processType, required BiometricsRequest request}) async {
+    final response = processType == ProcessType.authentication
+        ? await _voiceAuthenticationUsecase(request)
+        : await _enrollmentUsecase(request);
+    return response;
+  }
+
   Future<BiometricsResponse> authentication({required BiometricsRequest request}) async {
     final response = await _voiceAuthenticationUsecase(request);
     return response;

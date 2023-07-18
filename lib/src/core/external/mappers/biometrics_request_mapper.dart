@@ -10,6 +10,7 @@ class BiometricsRequestMapper {
       "extension": request.extension,
       "phone_number": request.phoneNumber,
       "show_details": request.showDetails,
+      "sentence_id": request.sentenceId,
     };
   }
 
