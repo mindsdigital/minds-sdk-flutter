@@ -7,7 +7,7 @@ class BiometricsResponseMapper {
   static BiometricsResponse toObject(Map<String, dynamic> map) {
     return BiometricsResponse(
       success: map['success'],
-      error: map['Error'] != null
+      error: map['error'] != null
           ? ErrorResponseMapper.toObject(map['error'] as Map<String, dynamic>)
           : null,
       id: map['id'],

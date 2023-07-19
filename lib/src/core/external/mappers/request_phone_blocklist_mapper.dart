@@ -1,4 +1,4 @@
-import 'package:minds_digital/minds_digital.dart';
+import '../../../../minds_digital.dart';
 
 class RequestPhoneBlocklistMapper {
   static Map<String, dynamic> toMap(RequestPhoneBlocklist request) {

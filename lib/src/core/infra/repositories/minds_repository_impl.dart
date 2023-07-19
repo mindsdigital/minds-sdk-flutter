@@ -2,6 +2,8 @@ import 'package:minds_digital/src/core/domain/entities/random_sentence/random_se
 import 'package:minds_digital/src/core/helpers/errors/minds_failure.dart';
 import 'package:result_dart/result_dart.dart';
 import '../../../../minds_digital.dart';
+import '../../domain/entities/audio/audio_convert_request.dart';
+import '../../domain/entities/audio/audio_response.dart';
 import '../../domain/entities/blocklist/blocklist_reponse.dart';
 import '../../domain/entities/enrollment/enrollment_certify_response.dart';
 import '../../domain/entities/enrollment/enrollment_verify_response.dart';
@@ -78,6 +80,16 @@ class MindsRepositoryImpl implements MindsRepository {
   Future<Result<RandomSentenceResponse, MindsFailure>> fetchRandomSentence() async {
     try {
       final result = await _remoteDataSource.fetchRandomSentence();
+      return Success(result);
+    } on MindsFailure catch (failure) {
+      return Failure(failure);
+    }
+  }
+
+  @override
+  Future<Result<AudioResponse, MindsFailure>> convertAudio(AudioConvertRequest request) async {
+    try {
+      final result = await _remoteDataSource.convertAudio(request);
       return Success(result);
     } on MindsFailure catch (failure) {
       return Failure(failure);

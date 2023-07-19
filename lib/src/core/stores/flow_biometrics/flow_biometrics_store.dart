@@ -17,6 +17,10 @@ class FlowBiometricsStore extends Cubit<FlowBiometricsState> {
   FlowBiometricsStore(this._fetchRandomSentenceUsecase, this._deleteAudioUsecase)
       : super(const FlowBiometricsState());
 
+  setLoading(bool value) {
+    emit(state.copyWith(state: value ? const LoadingState() : const UpdateState()));
+  }
+
   Future<void> fetchRandomSentence() async {
     emit(state.copyWith(state: const LoadingRandomSentenceState()));
     final response = await _fetchRandomSentenceUsecase();
@@ -42,6 +46,9 @@ class FlowBiometricsStore extends Cubit<FlowBiometricsState> {
       }
       return response;
     } catch (e) {
+      if (!kIsWeb) {
+        _deleteAudioUsecase(path);
+      }
       emit(state.copyWith(state: FailureState(e.toString())));
       rethrow;
     }
