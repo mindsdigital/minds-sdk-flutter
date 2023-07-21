@@ -11,11 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   dio: ^5.2.1+1
-  #http: ^0.13.5
   get_it: ^7.6.0
   record: ^4.4.4
-  audioplayers: ^4.1.0
-  path: ^1.8.0
   path_provider: ^2.0.1
   lottie: ^2.4.0
   bloc: ^8.1.2
