@@ -30,6 +30,7 @@ class CustomInterceptors extends Interceptor {
   @override
   Future onError(DioException err, ErrorInterceptorHandler handler) async {
     developer.log('ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}');
+    developer.log('DATA ${err.response?.data}');
     super.onError(err, handler);
   }
 }

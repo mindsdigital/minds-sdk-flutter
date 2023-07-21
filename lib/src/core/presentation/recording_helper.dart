@@ -1,66 +1,69 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:minds_digital/src/core/domain/entities/audio/audio_convert_request.dart';
-import 'package:minds_digital/src/core/domain/usecases/convert_audio_api_usecase.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:uuid/uuid.dart';
-import '../domain/usecases/convert_audio_to_ogg_usecase.dart';
 import 'package:record/record.dart';
-import 'dart:developer' as developer;
+import 'package:uuid/uuid.dart';
+import '../domain/entities/audio/audio_convert_request.dart';
+import '../domain/usecases/convert_audio_api_usecase.dart';
+import '../domain/usecases/convert_audio_to_ogg_usecase.dart';
 import '../domain/usecases/delete_audio_usecase.dart';
 import '../domain/usecases/delete_local_blob_audio_usecase.dart';
 import '../domain/usecases/fetch_audio_duration_usecase_impl.dart';
 import '../domain/usecases/fetch_base64_html_blob_usecase.dart';
+import '../helpers/constants.dart';
 
 class RecordingState extends Equatable {
   final int recordDuration;
   final bool isRecording;
+  final String? currentBlobUrl;
   const RecordingState({
     this.recordDuration = 0,
     this.isRecording = false,
+    this.currentBlobUrl,
   });
 
   RecordingState copyWith({
     int? recordDuration,
     bool? isRecording,
+    String? currentBlobUrl,
   }) {
     return RecordingState(
       recordDuration: recordDuration ?? this.recordDuration,
       isRecording: isRecording ?? this.isRecording,
+      currentBlobUrl: currentBlobUrl ?? this.currentBlobUrl,
     );
   }
 
   @override
-  List<Object?> get props => [recordDuration, isRecording];
+  List<Object?> get props => [recordDuration, isRecording, currentBlobUrl];
 }
 
 class RecordingHelper {
+  ValueNotifier<RecordingState> recordState = ValueNotifier(const RecordingState());
+  ConvertAudioToOggUsecase convertAudioToOggUsecase = GetIt.instance.get();
+  FetchAudioDurationUsecase fetchAudioDurationUsecase = GetIt.instance.get();
+  DeleteAudioUsecase deleteAudioUsecase = GetIt.instance.get();
+  FetchBase64HtmlBlobUsecase fetchBase64HtmlBlobUsecase = GetIt.instance.get();
+  ConvertAudioApiUsecase convertAudioApiUsecase = GetIt.instance.get();
+  DeleteLocalBlobUsecase deleteLocalBlobUsecase = GetIt.instance.get();
   Record record = Record();
   Timer? _timer;
-  ValueNotifier<RecordingState> recordState = ValueNotifier(const RecordingState());
-  ConvertAudioToOggUsecase convertAudioToOggUsecase =
-      GetIt.instance.get<ConvertAudioToOggUsecase>();
-  FetchAudioDurationUsecase fetchAudioDurationUsecase =
-      GetIt.instance.get<FetchAudioDurationUsecase>();
-  DeleteAudioUsecase deleteAudioUsecase = GetIt.instance.get<DeleteAudioUsecase>();
-  FetchBase64HtmlBlobUsecase fetchBase64HtmlBlobUsecase =
-      GetIt.instance.get<FetchBase64HtmlBlobUsecase>();
-  ConvertAudioApiUsecase convertAudioApiUsecase = GetIt.instance.get<ConvertAudioApiUsecase>();
-
-  DeleteLocalBlobUsecase deleteLocalBlobUsecase = GetIt.instance.get<DeleteLocalBlobUsecase>();
 
   Future<void> startRecord() async {
     Directory? directory;
     if (!kIsWeb) {
       directory = await getTemporaryDirectory();
+    } else {
+      recordState.value = recordState.value.copyWith(currentBlobUrl: "");
     }
     if (await record.hasPermission()) {
       await record.start(
         path: !kIsWeb ? "${directory!.path}/${const Uuid().v4()}.m4a" : null,
-        samplingRate: 48000,
+        samplingRate: Constants.samplingRate,
         encoder: !kIsWeb ? AudioEncoder.pcm16bit : AudioEncoder.opus,
         numChannels: 1,
       );
@@ -71,54 +74,53 @@ class RecordingHelper {
     }
   }
 
-  Future<void> _stopRecordWeb() async {}
+  Future<String?> _stopRecordWeb(String? path, int currentDuration) async {
+    if (path != null) {
+      recordState.value = recordState.value.copyWith(currentBlobUrl: path);
+      if (minLenghtVerify(currentDuration)) {
+        deleteLocalBlobUsecase(path);
+        return null;
+      }
+      final base64 = await fetchBase64HtmlBlobUsecase(path);
+      if (base64 != null) {
+        final response = await convertAudioApiUsecase(
+          AudioConvertRequest(
+            audio: base64,
+            format: 'webm',
+            nextFormat: 'flac',
+          ),
+        );
+        response.fold((result) => path = result.audio, (failure) {});
+      }
+      return path;
+    }
+    return null;
+  }
 
-  Future<void> _stopRecordMobile() async {}
+  Future<String?> _stopRecordMobile(String? path, int currentDuration) async {
+    if (path != null) {
+      if (minLenghtVerify(currentDuration)) {
+        deleteAudioUsecase(path);
+        return null;
+      }
+      final response = await convertAudioToOggUsecase(path);
+      return response;
+    }
+    return null;
+  }
 
   Future<String?> stopRecord() async {
-    // if (kIsWeb) {
-    //   _stopRecordWeb();
-    // } else {
-    //   _stopRecordMobile();
-    // }
     final currentDuration = recordState.value.recordDuration;
     _stopTimer();
     String? path = await record.stop();
     final isRecording = await record.isRecording();
-    recordState.value = recordState.value.copyWith(isRecording: isRecording);
-    developer.log(path ?? "");
-
-    if (path != null) {
-      if ((currentDuration % 60) < 5) {
-        if (kIsWeb) {
-          deleteLocalBlobUsecase(path);
-        } else {
-          await deleteAudioUsecase(path);
-        }
-        return null;
-      }
-
-      if (!kIsWeb) {
-        final response = await convertAudioToOggUsecase(path);
-        return response;
-      }
+    recordState.value = recordState.value.copyWith(isRecording: isRecording, currentBlobUrl: path);
+    developer.log(path!);
+    if (kIsWeb) {
+      return _stopRecordWeb(path, currentDuration);
+    } else {
+      return _stopRecordMobile(path, currentDuration);
     }
-
-    final base64 = await fetchBase64HtmlBlobUsecase(path ?? "");
-
-    if (base64 != null) {
-      final response = await convertAudioApiUsecase(
-        AudioConvertRequest(audio: base64, format: 'webm', nextFormat: 'wav'),
-      );
-      response.fold(
-        (result) {
-          path = result.audio;
-        },
-        (failure) {},
-      );
-    }
-
-    return path;
   }
 
   void _startTimer() {
@@ -134,14 +136,14 @@ class RecordingHelper {
     recordState.value = recordState.value.copyWith(recordDuration: 0);
   }
 
-  Future<bool> isAudioLongerThan5Seconds() async {
-    final duration = (recordState.value.recordDuration % 60);
-    return duration > 5;
+  bool minLenghtVerify(int currentDuration) {
+    final duration = (currentDuration % 60);
+    return duration < 5;
   }
 
   void dispose() {
     recordState.dispose();
-    _timer?.cancel();
     record.dispose();
+    _timer?.cancel();
   }
 }

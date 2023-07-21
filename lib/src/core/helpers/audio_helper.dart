@@ -21,7 +21,7 @@ class AudioHelper {
       final bytes = await file.readAsBytes();
       return bytes;
     } catch (e) {
-      throw Exception('Falha ao ler os bytes do arquivo de áudio.');
+      throw Exception('Falha ao ler os bytes do arquivo de áudio $e');
     }
   }
 }

@@ -1,5 +1,4 @@
 import 'package:minds_digital/minds_digital.dart';
-import 'package:minds_digital/src/core/domain/entities/biometrics_reponse/biometrics_response.dart';
 import 'package:minds_digital/src/core/domain/entities/blocklist/blocklist_reponse.dart';
 import 'package:minds_digital/src/core/domain/entities/enrollment/enrollment_certify_response.dart';
 import 'package:minds_digital/src/core/domain/entities/enrollment/enrollment_verify_response.dart';

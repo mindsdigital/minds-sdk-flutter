@@ -1,5 +1,4 @@
 import '../../../../minds_digital.dart';
-import '../entities/biometrics_reponse/biometrics_response.dart';
 import '../repositories/minds_repository.dart';
 import 'enrollment_usecase.dart';
 

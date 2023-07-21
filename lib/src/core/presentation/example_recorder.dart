@@ -1,9 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:minds_digital/src/core/presentation/audio_player.dart';
 import 'package:record/record.dart';
+import 'audio_player.dart';
 
 class AudioRecorder extends StatefulWidget {
   final void Function(String path) onStop;

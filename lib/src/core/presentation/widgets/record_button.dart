@@ -1,59 +1,130 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
+import '../../helpers/theme/asset_paths.dart';
+import '../../helpers/theme/design_system_constants.dart';
 import '../../helpers/theme/theme_colors.dart';
 
-class RecordButton extends StatefulWidget {
-  final void Function()? onTapDown;
-  final void Function()? onTapUp;
-  final void Function()? onTap;
-  final Widget? icon;
+class PressAndHoldButton extends StatefulWidget {
+  final VoidCallback onPressed;
+  final VoidCallback onReleased;
+  final bool isRecording;
+  final Color? buttonColor;
 
-  const RecordButton({
-    Key? key,
-    required this.onTapDown,
-    required this.onTapUp,
-    required this.onTap,
-    required this.icon,
-  }) : super(key: key);
+  const PressAndHoldButton({
+    super.key,
+    required this.onPressed,
+    required this.onReleased,
+    this.isRecording = false,
+    this.buttonColor,
+  });
 
   @override
-  _RecordButtonState createState() => _RecordButtonState();
+  _PressAndHoldButtonState createState() => _PressAndHoldButtonState();
 }
 
-class _RecordButtonState extends State<RecordButton> {
-  double _buttonSize = 60.0;
+class _PressAndHoldButtonState extends State<PressAndHoldButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  bool _isButtonPressed = false;
 
-  void onTapDown() {
-    setState(() {
-      _buttonSize = 90.0;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
   }
 
-  void onTapUp() {
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _startAnimation() {
+    _animationController.forward();
+  }
+
+  void _stopAnimation() {
+    _animationController.reverse();
+  }
+
+  void _onPressed() {
     setState(() {
-      _buttonSize = 70.0;
+      _isButtonPressed = true;
     });
+    _startAnimation();
+    widget.onPressed();
+  }
+
+  void _onReleased() {
+    setState(() {
+      _isButtonPressed = false;
+    });
+    _stopAnimation();
+    widget.onReleased();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: GestureDetector(
-        onTap: widget.onTap,
-        onTapDown: kIsWeb ? null : (_) => onTapDown(),
-        onTapUp: kIsWeb ? null : (_) => onTapUp(),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: _buttonSize,
-          height: _buttonSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: ThemColors.primaryColor,
+    if (!kIsWeb) {
+      return GestureDetector(
+        onTapDown: (_) => _onPressed(),
+        onTapUp: (_) => _onReleased(),
+        onTapCancel: () => _onReleased(),
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _isButtonPressed ? 1.15 : 1.0,
+              child: child,
+            );
+          },
+          child: Container(
+            width: 75,
+            height: 75,
+            decoration: BoxDecoration(
+              color: widget.buttonColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 8.0,
+                  spreadRadius: 2.0,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Icon(
+                widget.isRecording ? Icons.send : Icons.mic,
+                color: Colors.white,
+                size: 35,
+              ),
+            ),
           ),
-          child: widget.icon,
         ),
-      ),
-    );
+      );
+    } else {
+      return ElevatedButton(
+        onPressed: _onPressed,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: widget.isRecording
+              ? const Icon(Icons.send)
+              : Image.asset(
+                  AssetPaths.mic,
+                  package: DesignSystemConstants.packageName,
+                  width: 28,
+                  height: 28,
+                ),
+        ),
+        style: ElevatedButton.styleFrom(
+          shape: const CircleBorder(),
+          padding: const EdgeInsets.all(8),
+          backgroundColor: widget.buttonColor ?? ThemeColors.primaryColor,
+        ),
+      );
+    }
   }
 }

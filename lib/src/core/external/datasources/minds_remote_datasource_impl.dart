@@ -1,25 +1,28 @@
 import 'package:dio/dio.dart';
+import '../../../../minds_digital.dart';
 import '../../domain/entities/audio/audio_convert_request.dart';
 import '../../domain/entities/audio/audio_response.dart';
-import '../../domain/entities/random_sentence/random_sentence_response.dart';
-import '../mappers/audio_request_mapper.dart';
-import '../mappers/audio_response_mapper.dart';
-import '../mappers/random_sentence_response_mapper.dart';
-import '../../helpers/errors/api_failure.dart';
-import '../../helpers/errors/datasource_failure.dart';
-import '../../../../minds_digital.dart';
-import '../../domain/entities/biometrics_reponse/biometrics_response.dart';
 import '../../domain/entities/blocklist/blocklist_reponse.dart';
 import '../../domain/entities/enrollment/enrollment_certify_response.dart';
 import '../../domain/entities/enrollment/enrollment_verify_response.dart';
+import '../../domain/entities/random_sentence/random_sentence_response.dart';
+import '../../domain/entities/validator_sdk/init_validator_request.dart';
+import '../../domain/entities/validator_sdk/remote_sdk_init_validator_response.dart';
 import '../../helpers/endpoint.dart';
+import '../../helpers/errors/api_failure.dart';
+import '../../helpers/errors/datasource_failure.dart';
 import '../../infra/datasources/minds_remote_datasource.dart';
+import '../mappers/audio_request_mapper.dart';
+import '../mappers/audio_response_mapper.dart';
 import '../mappers/biometrics_reponse_mapper.dart';
 import '../mappers/biometrics_request_mapper.dart';
 import '../mappers/blocklist_reponse_mapper.dart';
 import '../mappers/enrollment_certify_request_mapper.dart';
 import '../mappers/enrollment_certify_response_mapper.dart';
 import '../mappers/enrollment_verify_mapper.dart';
+import '../mappers/init_validator_request_mapper.dart';
+import '../mappers/random_sentence_response_mapper.dart';
+import '../mappers/remote_sdk_init_validator_response_mapper.dart';
 import '../mappers/request_phone_blocklist_mapper.dart';
 import '../mappers/request_voice_blocklist_mapper.dart';
 
@@ -180,7 +183,7 @@ class MindsRemoteDataSourceImpl implements MindsRemoteDataSource {
     try {
       final data = AudioRequestMapper.toMap(request);
       final response = await _httpClient.post(
-        "https://audio-validation-api-staging-tgv4y32kia-uc.a.run.app/convert",
+        '',
         data: data,
       );
       return AudioResponseMapper.toObject(response.data);
@@ -188,6 +191,30 @@ class MindsRemoteDataSourceImpl implements MindsRemoteDataSource {
       if (error.response?.data is Map<String, dynamic>) {
         try {
           return AudioResponseMapper.toObject(error.response?.data);
+        } catch (error, stackTrace) {
+          throw DatasourceFailure(error.toString(), stackTrace);
+        }
+      } else {
+        throw ApiFailure(error.toString(), stackTrace);
+      }
+    } catch (error, stackTrace) {
+      throw DatasourceFailure(error.toString(), stackTrace);
+    }
+  }
+
+  @override
+  Future<RemoteSDKInitValidatorResponse> initValidator(InitValidatorRequest request) async {
+    try {
+      final data = InitValidatorRequestMapper.toMap(request);
+      final response = await _httpClient.post(
+        "${MindsApiWrapper.environment!.speakerUrl}${Endpoint.initValidator}",
+        data: data,
+      );
+      return RemoteSdkInitValidatorResponseMapper.toObject(response.data);
+    } on DioException catch (error, stackTrace) {
+      if (error.response?.data is Map<String, dynamic>) {
+        try {
+          return RemoteSdkInitValidatorResponseMapper.toObject(error.response?.data);
         } catch (error, stackTrace) {
           throw DatasourceFailure(error.toString(), stackTrace);
         }

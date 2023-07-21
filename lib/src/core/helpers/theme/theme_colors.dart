@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class ThemColors {
-  const ThemColors._();
+class ThemeColors {
+  const ThemeColors._();
 
   static Color get black => const Color(0xff252525);
 

@@ -22,6 +22,8 @@ import '../domain/usecases/fetch_audio_duration_usecase_impl.dart';
 import '../domain/usecases/fetch_base64_html_blob_usecase.dart';
 import '../domain/usecases/fetch_random_sentence_usecase.dart';
 import '../domain/usecases/fetch_random_sentence_usecase_impl.dart';
+import '../domain/usecases/sdk_init_validator_usecase.dart';
+import '../domain/usecases/sdk_init_validator_usecase_impl.dart';
 import '../domain/usecases/set_phone_blocklist_usecase.dart';
 import '../domain/usecases/set_phone_blocklist_usecase_impl.dart';
 import '../domain/usecases/set_voice_blocklist_usecase.dart';
@@ -75,9 +77,12 @@ class Injectors {
 
     getIt.registerFactory<DeleteLocalBlobUsecase>(() => DeleteLocalBlobUsecaseImpl());
 
+    getIt.registerFactory<SDKInitValidatorUsecase>(() => SDKInitValidatorUsecaseImpl(getIt()));
+
     getIt.registerFactory<MindsService>(
         () => MindsService(getIt(), getIt(), getIt(), getIt(), getIt(), getIt()));
 
-    getIt.registerFactory<FlowBiometricsStore>(() => FlowBiometricsStore(getIt(), getIt()));
+    getIt.registerFactory<FlowBiometricsStore>(
+        () => FlowBiometricsStore(getIt(), getIt(), getIt(), getIt()));
   }
 }

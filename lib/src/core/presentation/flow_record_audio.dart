@@ -1,22 +1,42 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lottie/lottie.dart';
 import 'package:minds_digital/minds_digital.dart';
-import '../domain/entities/biometrics_reponse/biometrics_response.dart';
-import 'recording_helper.dart';
+import 'package:minds_digital/src/core/helpers/constants.dart';
+import 'package:minds_digital/src/core/presentation/widgets/record_button.dart';
+import '../domain/entities/validator_sdk/init_validator_request.dart';
 import '../helpers/theme/asset_paths.dart';
 import '../helpers/theme/design_system_constants.dart';
 import '../helpers/theme/theme_colors.dart';
 import '../stores/flow_biometrics/flow_biometrics_store.dart';
 import 'helpers/base_state.dart';
+import 'recording_helper.dart';
+
+class FlowStyle {
+  final String? title;
+  final String? subtitle;
+  final Color? loadingColor;
+  final Color? animationRecorderColor;
+  final Color? buttonColor;
+  const FlowStyle({
+    this.title,
+    this.subtitle,
+    this.loadingColor,
+    this.animationRecorderColor,
+    this.buttonColor,
+  });
+}
 
 class FlowRecordAudioRequest {
-  final BiometricsRequest biometricsRequest;
+  final FlowBiometricsRequest biometricsRequest;
   final ProcessType processType;
   final BuildContext context;
+
   FlowRecordAudioRequest({
     required this.biometricsRequest,
     required this.processType,
@@ -27,13 +47,15 @@ class FlowRecordAudioRequest {
 class FlowRecordAudio extends StatefulWidget {
   final FlowRecordAudioRequest request;
   final Function(BiometricsResponse) onResponse;
-  final Function(dynamic) onError;
+  final Function(Exception) onError;
+  final FlowStyle? style;
 
   const FlowRecordAudio({
     super.key,
     required this.request,
     required this.onError,
     required this.onResponse,
+    this.style,
   });
 
   @override
@@ -55,23 +77,39 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
   RecordingHelper recordingHelper = RecordingHelper();
   FlowRecordAudioRequest get request => widget.request;
   BuildContext get buildContext => request.context;
+  InitValidatorRequest get initValidatorRequest => InitValidatorRequest(
+        cpf: request.biometricsRequest.cpf,
+        phoneNumber: request.biometricsRequest.phoneNumber ?? "",
+        rate: Constants.samplingRate,
+        isAuthentication: request.processType == ProcessType.authentication,
+      );
+  FlowStyle? get style => widget.style;
 
   @override
   void initState() {
     super.initState();
     _store = GetIt.instance.get<FlowBiometricsStore>();
-    _store.fetchRandomSentence();
+    _store.sdkInitValidator(initValidatorRequest);
+
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 4));
     _controller.repeat();
-    _stream = _store.stream.listen((event) {});
+    _stream = _store.stream.listen((event) {
+      if (event.state is FailureSdkInitState) {
+        widget.onError(Exception((event.state as FailureSdkInitState).message));
+        Navigator.of(buildContext).pop();
+      }
+      if (event.state is SuccessSdkInitState) {
+        _store.fetchRandomSentence();
+      }
+    });
   }
 
   @override
   void dispose() {
+    recordingHelper.dispose();
     _controller.dispose();
     _stream.cancel();
     _store.close();
-    recordingHelper.dispose();
     super.dispose();
   }
 
@@ -83,8 +121,6 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
           constraints: const BoxConstraints(maxWidth: 700),
-          //width: MediaQuery.of(context).size.width * 0.5,
-          //height: MediaQuery.of(context).size.height * 0.6,
           child: ValueListenableBuilder(
               valueListenable: recordingHelper.recordState,
               builder: (context, recordState, _) {
@@ -115,7 +151,36 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
                       builder: (context, bloc) {
                         if (bloc.state is LoadingState) {
                           return Center(
-                              child: CircularProgressIndicator(color: ThemColors.primaryColor));
+                            child: CircularProgressIndicator(
+                              color: style?.loadingColor != null
+                                  ? style!.loadingColor!
+                                  : ThemeColors.primaryColor,
+                            ),
+                          );
+                        }
+
+                        if (bloc.state is FailureFetchRandomSentenceState) {
+                          return Center(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  "Falha ao carregar a frase",
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () async => await _store.fetchRandomSentence(),
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('Tentar novammente'),
+                                )
+                              ],
+                            ),
+                          );
                         }
 
                         return Padding(
@@ -126,9 +191,11 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                request.processType == ProcessType.enrollment
-                                    ? "Cadastre sua voz"
-                                    : "Autentique sua voz",
+                                style?.title != null
+                                    ? style!.title!
+                                    : request.processType == ProcessType.enrollment
+                                        ? "Cadastre sua voz"
+                                        : "Autentique sua voz",
                                 style: const TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 24,
@@ -137,12 +204,14 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
                               ),
                               const SizedBox(height: 20),
                               Text(
-                                "Clique no microfone, diga a frase de segurança e envie sua biometria.",
+                                style?.subtitle != null
+                                    ? style!.subtitle!
+                                    : "Clique no microfone, diga a frase de segurança e envie sua biometria.",
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 16,
                                   fontWeight: FontWeight.w400,
-                                  color: ThemColors.grey,
+                                  color: ThemeColors.grey,
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -166,6 +235,16 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
                                       onLoaded: (composition) {},
                                       package: DesignSystemConstants.packageName,
                                       repeat: true,
+                                      delegates: style?.animationRecorderColor != null
+                                          ? LottieDelegates(
+                                              values: [
+                                                ValueDelegate.color(
+                                                  const ['**'],
+                                                  value: style!.animationRecorderColor,
+                                                ),
+                                              ],
+                                            )
+                                          : null,
                                     ),
                                   ),
                                 ),
@@ -175,70 +254,13 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
                                   height: recordState.isRecording
                                       ? 25
                                       : MediaQuery.of(context).size.height * 0.25),
-                              Center(
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    try {
-                                      if (!recordState.isRecording) {
-                                        _store.setLoading(true);
-                                        recordingHelper.startRecord();
-                                        _store.setLoading(false);
-                                      } else {
-                                        _store.setLoading(true);
-                                        final path = await recordingHelper.stopRecord();
-                                        _store.setLoading(false);
-                                        if ((recordState.recordDuration % 60) < 5) {
-                                          showInfoInvalidLenght();
-                                          return;
-                                        }
-                                        if (path != null) {
-                                          final response = await _store.sendAudio(
-                                            path: path,
-                                            processType: request.processType,
-                                            request: BiometricsRequest(
-                                              audio: kIsWeb
-                                                  ? path
-                                                  : await AudioHelper.convertPathToBase64(path),
-                                              cpf: request.biometricsRequest.cpf,
-                                              externalId: request.biometricsRequest.externalId,
-                                              externalCustomerId:
-                                                  request.biometricsRequest.externalCustomerId,
-                                              extension: kIsWeb ? 'wav' : 'ogg',
-                                              phoneNumber: request.biometricsRequest.phoneNumber,
-                                              showDetails: request.biometricsRequest.showDetails,
-                                              sentenceId:
-                                                  bloc.randomSentence.sentence.text.isNotEmpty
-                                                      ? bloc.randomSentence.sentence.id.toString()
-                                                      : null,
-                                            ),
-                                          );
-
-                                          widget.onResponse.call(response);
-                                          Navigator.of(buildContext).pop();
-                                        }
-                                      }
-                                    } catch (error) {
-                                      _store.setLoading(false);
-                                      widget.onError.call(error);
-                                      Navigator.of(buildContext).pop();
-                                      //rethrow;
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: recordState.isRecording
-                                        ? const Icon(Icons.send)
-                                        : Image.asset(
-                                            AssetPaths.mic,
-                                            package: DesignSystemConstants.packageName,
-                                            width: 28,
-                                            height: 28,
-                                          ),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    shape: const CircleBorder(),
-                                    padding: const EdgeInsets.all(8),
-                                    backgroundColor: ThemColors.primaryColor,
+                              SizedBox(
+                                child: Center(
+                                  child: PressAndHoldButton(
+                                    isRecording: recordState.isRecording,
+                                    buttonColor: style?.buttonColor,
+                                    onPressed: () async => recordAudio(recordState, bloc),
+                                    onReleased: () async => recordAudio(recordState, bloc),
                                   ),
                                 ),
                               ),
@@ -255,26 +277,87 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
     );
   }
 
+  void recordAudio(RecordingState recordState, FlowBiometricsState bloc) async {
+    try {
+      if (!recordState.isRecording) {
+        _store.setLoading(true);
+        recordingHelper.startRecord();
+        _store.setLoading(false);
+      } else {
+        _store.setLoading(true);
+        final path = await recordingHelper.stopRecord();
+        _store.setLoading(false);
+        if ((recordState.recordDuration % 60) < 5) {
+          showInfoInvalidLenght();
+          return;
+        }
+        if (path != null) {
+          final response = await _store.sendAudio(
+            currentBlobUrl: kIsWeb ? recordingHelper.recordState.value.currentBlobUrl : null,
+            path: path,
+            processType: request.processType,
+            request: BiometricsRequest(
+              audio: kIsWeb ? path : await AudioHelper.convertPathToBase64(path),
+              cpf: request.biometricsRequest.cpf,
+              externalId: request.biometricsRequest.externalId,
+              externalCustomerId: request.biometricsRequest.externalCustomerId,
+              extension: kIsWeb ? 'flac' : 'ogg',
+              phoneNumber: request.biometricsRequest.phoneNumber,
+              showDetails: request.biometricsRequest.showDetails,
+              sentenceId: bloc.randomSentence.sentence.text.isNotEmpty
+                  ? bloc.randomSentence.sentence.id.toString()
+                  : null,
+            ),
+          );
+          widget.onResponse.call(response);
+          Navigator.of(buildContext).pop();
+        }
+      }
+    } on Exception catch (error) {
+      _store.setLoading(false);
+      widget.onError.call(error);
+      Navigator.of(buildContext).pop();
+      //rethrow;
+    }
+  }
+
   void showInfoInvalidLenght() {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Duranção inválida', style: TextStyle(fontFamily: "Inter")),
-          content: const Text("É preciso que o áudio tenha mais que 5 segundos de duração",
-              style: TextStyle(fontFamily: "Inter")),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                "TENTAR NOVAMENTE",
-                style: TextStyle(fontFamily: "Inter", color: ThemColors.primaryColor),
-              ),
-            )
-          ],
-        );
+        return kIsWeb || Platform.isAndroid
+            ? AlertDialog(
+                title: const Text('Duranção inválida', style: TextStyle(fontFamily: "Inter")),
+                content: const Text("É preciso que o áudio tenha mais que 5 segundos de duração",
+                    style: TextStyle(fontFamily: "Inter")),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      "TENTAR NOVAMENTE",
+                      style: TextStyle(fontFamily: "Inter", color: ThemeColors.primaryColor),
+                    ),
+                  )
+                ],
+              )
+            : CupertinoAlertDialog(
+                title: const Text('Duranção inválida', style: TextStyle(fontFamily: "Inter")),
+                content: const Text("É preciso que o áudio tenha mais que 5 segundos de duração",
+                    style: TextStyle(fontFamily: "Inter")),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text(
+                      "TENTAR NOVAMENTE",
+                      style: TextStyle(fontFamily: "Inter", color: Colors.blueAccent),
+                    ),
+                  )
+                ],
+              );
       },
     );
   }
