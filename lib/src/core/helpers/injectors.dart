@@ -42,10 +42,10 @@ class Injectors {
   const Injectors(this.getIt);
 
   configure() {
-    getIt.registerSingleton<Dio>(Dio(BaseOptions(baseUrl: MindsApiWrapper.environment!.baseUrl))
-      ..interceptors.add(CustomInterceptors()));
+    final httpClient = Dio(BaseOptions(baseUrl: MindsApiWrapper.environment!.baseUrl))
+      ..interceptors.add(CustomInterceptors());
 
-    getIt.registerFactory<MindsRemoteDataSource>(() => MindsRemoteDataSourceImpl(getIt()));
+    getIt.registerFactory<MindsRemoteDataSource>(() => MindsRemoteDataSourceImpl(httpClient));
 
     getIt.registerFactory<MindsRepository>(() => MindsRepositoryImpl(getIt()));
 
