@@ -87,7 +87,7 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
   InitValidatorRequest get initValidatorRequest => InitValidatorRequest(
         cpf: request.biometricsRequest.cpf,
         phoneNumber: request.biometricsRequest.phoneNumber ?? "",
-        rate: Constants.samplingRate,
+        rate: MindsSDKConstants.samplingRate,
         isAuthentication: request.processType == ProcessType.authentication,
       );
   FlowStyle? get style => widget.style;

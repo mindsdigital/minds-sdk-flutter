@@ -6,8 +6,8 @@ class InitValidatorRequestMapper {
     return {
       "cpf": request.cpf,
       "phone_number": request.phoneNumber,
-      "extension": Constants.defaultExtension,
-      "rate": Constants.samplingRate,
+      "extension": MindsSDKConstants.defaultExtension,
+      "rate": MindsSDKConstants.samplingRate,
       "check_for_verification": request.isAuthentication,
     };
   }

@@ -63,7 +63,7 @@ class RecordingHelper {
     if (await record.hasPermission()) {
       await record.start(
         path: !kIsWeb ? "${directory!.path}/${const Uuid().v4()}.m4a" : null,
-        samplingRate: Constants.samplingRate,
+        samplingRate: MindsSDKConstants.samplingRate,
         encoder: !kIsWeb ? AudioEncoder.pcm16bit : AudioEncoder.opus,
         numChannels: 1,
       );
