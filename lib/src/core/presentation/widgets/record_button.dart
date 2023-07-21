@@ -85,7 +85,7 @@ class _PressAndHoldButtonState extends State<PressAndHoldButton>
             width: 75,
             height: 75,
             decoration: BoxDecoration(
-              color: widget.buttonColor,
+              color: widget.buttonColor ?? ThemeColors.primaryColor,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(

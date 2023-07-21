@@ -87,7 +87,7 @@ class RecordingHelper {
           AudioConvertRequest(
             audio: base64,
             format: 'webm',
-            nextFormat: 'flac',
+            nextFormat: 'mp3',
           ),
         );
         response.fold((result) => path = result.audio, (failure) {});

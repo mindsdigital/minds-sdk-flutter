@@ -8,7 +8,6 @@ import '../../domain/entities/validator_sdk/init_validator_request.dart';
 import '../../domain/usecases/delete_audio_usecase.dart';
 import '../../domain/usecases/delete_local_blob_audio_usecase.dart';
 import '../../domain/usecases/fetch_random_sentence_usecase.dart';
-import '../../presentation/helpers/base_state.dart';
 part 'flow_biometrics_state.dart';
 
 class FlowBiometricsStore extends Cubit<FlowBiometricsState> {

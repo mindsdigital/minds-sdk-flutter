@@ -14,8 +14,14 @@ import '../helpers/theme/asset_paths.dart';
 import '../helpers/theme/design_system_constants.dart';
 import '../helpers/theme/theme_colors.dart';
 import '../stores/flow_biometrics/flow_biometrics_store.dart';
-import 'helpers/base_state.dart';
 import 'recording_helper.dart';
+
+typedef CustomBuilder = Widget Function(
+  BuildContext context,
+  RecordingState recordingState,
+  FlowBiometricsState flowBiometricsState,
+  Widget recordButton,
+);
 
 class FlowStyle {
   final String? title;
@@ -49,13 +55,14 @@ class FlowRecordAudio extends StatefulWidget {
   final Function(BiometricsResponse) onResponse;
   final Function(Exception) onError;
   final FlowStyle? style;
-
+  final CustomBuilder? customBuilder;
   const FlowRecordAudio({
     super.key,
     required this.request,
     required this.onError,
     required this.onResponse,
     this.style,
+    this.customBuilder,
   });
 
   @override
@@ -115,16 +122,25 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () => Future.value(false),
-      child: Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 700),
-          child: ValueListenableBuilder(
-              valueListenable: recordingHelper.recordState,
-              builder: (context, recordState, _) {
-                return Stack(
+    return BlocBuilder<FlowBiometricsStore, FlowBiometricsState>(
+      bloc: _store,
+      builder: (context, bloc) {
+        return ValueListenableBuilder(
+          valueListenable: recordingHelper.recordState,
+          builder: (context, recordState, _) {
+            if (widget.customBuilder != null) {
+              return widget.customBuilder!(
+                context,
+                recordState,
+                bloc,
+                buttonRecord(recordState, bloc),
+              );
+            }
+            return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: Stack(
                   children: [
                     Visibility(
                       visible: !recordState.isRecording,
@@ -146,44 +162,41 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
                         ),
                       ),
                     ),
-                    BlocBuilder<FlowBiometricsStore, FlowBiometricsState>(
-                      bloc: _store,
-                      builder: (context, bloc) {
-                        if (bloc.state is LoadingState) {
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: style?.loadingColor != null
-                                  ? style!.loadingColor!
-                                  : ThemeColors.primaryColor,
+                    if (bloc.state is LoadingState) ...[
+                      Center(
+                        child: CircularProgressIndicator(
+                          color: style?.loadingColor != null
+                              ? style!.loadingColor!
+                              : ThemeColors.primaryColor,
+                        ),
+                      )
+                    ],
+                    if (bloc.state is FailureFetchRandomSentenceState) ...[
+                      Center(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Falha ao carregar a frase",
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 18,
+                              ),
                             ),
-                          );
-                        }
-
-                        if (bloc.state is FailureFetchRandomSentenceState) {
-                          return Center(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  "Falha ao carregar a frase",
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () async => await _store.fetchRandomSentence(),
-                                  icon: const Icon(Icons.refresh),
-                                  label: const Text('Tentar novammente'),
-                                )
-                              ],
-                            ),
-                          );
-                        }
-
-                        return Padding(
+                            TextButton.icon(
+                              onPressed: () async => await _store.fetchRandomSentence(),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Tentar novammente'),
+                            )
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      Visibility(
+                        visible: bloc.state is! LoadingState,
+                        child: Padding(
                           padding: const EdgeInsets.fromLTRB(24, 45, 24, 45),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,27 +268,29 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
                                       ? 25
                                       : MediaQuery.of(context).size.height * 0.25),
                               SizedBox(
-                                child: Center(
-                                  child: PressAndHoldButton(
-                                    isRecording: recordState.isRecording,
-                                    buttonColor: style?.buttonColor,
-                                    onPressed: () async => recordAudio(recordState, bloc),
-                                    onReleased: () async => recordAudio(recordState, bloc),
-                                  ),
-                                ),
+                                child: Center(child: buttonRecord(recordState, bloc)),
                               ),
                             ],
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      )
+                    ],
                   ],
-                );
-              }),
-        ),
-      ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
+
+  Widget buttonRecord(RecordingState recordState, FlowBiometricsState bloc) => PressAndHoldButton(
+        isRecording: recordState.isRecording,
+        buttonColor: style?.buttonColor,
+        onPressed: () async => recordAudio(recordState, bloc),
+        onReleased: () async => recordAudio(recordState, bloc),
+      );
 
   void recordAudio(RecordingState recordState, FlowBiometricsState bloc) async {
     try {
@@ -301,7 +316,7 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
               cpf: request.biometricsRequest.cpf,
               externalId: request.biometricsRequest.externalId,
               externalCustomerId: request.biometricsRequest.externalCustomerId,
-              extension: kIsWeb ? 'flac' : 'ogg',
+              extension: kIsWeb ? 'mp3' : 'ogg',
               phoneNumber: request.biometricsRequest.phoneNumber,
               showDetails: request.biometricsRequest.showDetails,
               sentenceId: bloc.randomSentence.sentence.text.isNotEmpty
