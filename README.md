@@ -116,8 +116,8 @@ FlowRecordAudio(
   style: const FlowStyle(),
 ).show(context);
 ```
-![Dialog](assets/samples/dialog.png)
 
+<img src="https://raw.githubusercontent.com/mindsdigital/minds-sdk-flutter/main/assets/samples/dialog.png" width="320px"/>
 
 ### Renderização em forma de tela usando CustomBuilder
 
@@ -189,4 +189,4 @@ Navigator.push(
 );
 ```
 
-![Custom Builder](assets/samples/custom_builder.png)
+<img src="https://raw.githubusercontent.com/mindsdigital/minds-sdk-flutter/main/assets/samples/custom_builder.png" width="320px"/>
