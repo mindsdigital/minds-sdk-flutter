@@ -21,24 +21,6 @@ Adicione as seguintes chaves ao seu arquivo **Info.plist**, localizado em `<proj
   <string>Used to capture audio</string>
   ```
 
-
-Adicione também a permissão a seu arquivo PodFile:
-
-
-```ruby
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    flutter_additional_ios_build_settings(target)
-    target.build_configurations.each do |config|
-      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
-        '$(inherited)',
-        'AUDIO_SESSION_MICROPHONE=0' #MIC PERMISSION
-      ]
-    end
-  end
-end
-```
-
 ## Using package
 
 In your Dart code, you can use:
