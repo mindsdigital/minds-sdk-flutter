@@ -1,6 +1,44 @@
 # Minds Digital
 
 
+
+### Configuração Android 
+
+Ao executar no sistema Android, se você receber um erro indicando que `minSdkVersion` precisa ser `24`.
+
+tente adicionar o seguinte trecho ao arquivo `<project_directory>/android/app/src/main/AndroidManifest.xml`:
+
+```
+<manifest xmlns:tools="http://schemas.android.com/tools" ....... >
+    <uses-sdk tools:overrideLibrary="com.arthenica.ffmpegkit.flutter, com.arthenica.ffmpegkit" />
+</manifest>
+```
+### Configuração iOS
+
+Adicione as seguintes chaves ao seu arquivo **Info.plist**, localizado em `<project root>/ios/Runner/Info.plist`:
+  ```
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Used to capture audio</string>
+  ```
+
+
+Adicione também a permissão a seu arquivo PodFile:
+
+
+```ruby
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'AUDIO_SESSION_MICROPHONE=0' #MIC PERMISSION
+      ]
+    end
+  end
+end
+```
+
 ## Using package
 
 In your Dart code, you can use:

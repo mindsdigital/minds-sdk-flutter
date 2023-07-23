@@ -5,15 +5,17 @@ import '../../helpers/theme/design_system_constants.dart';
 import '../../helpers/theme/theme_colors.dart';
 
 class PressAndHoldButton extends StatefulWidget {
-  final VoidCallback onPressed;
-  final VoidCallback onReleased;
+  final VoidCallback onLongPressStart;
+  final VoidCallback onLongPressEnd;
+  final VoidCallback onTap;
   final bool isRecording;
   final Color? buttonColor;
 
   const PressAndHoldButton({
     super.key,
-    required this.onPressed,
-    required this.onReleased,
+    required this.onLongPressStart,
+    required this.onLongPressEnd,
+    required this.onTap,
     this.isRecording = false,
     this.buttonColor,
   });
@@ -50,64 +52,49 @@ class _PressAndHoldButtonState extends State<PressAndHoldButton>
     _animationController.reverse();
   }
 
-  void _onPressed() {
+  void _onLongPressStart() {
     setState(() {
       _isButtonPressed = true;
     });
     _startAnimation();
-    widget.onPressed();
+    widget.onLongPressStart();
   }
 
-  void _onReleased() {
+  void _onLongPressEnd() {
     setState(() {
       _isButtonPressed = false;
     });
     _stopAnimation();
-    widget.onReleased();
+    widget.onLongPressEnd();
   }
 
   @override
   Widget build(BuildContext context) {
     if (!kIsWeb) {
       return GestureDetector(
-        onTapDown: (_) => _onPressed(),
-        onTapUp: (_) => _onReleased(),
-        onTapCancel: () => _onReleased(),
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _isButtonPressed ? 1.15 : 1.0,
-              child: child,
-            );
-          },
-          child: Container(
-            width: 75,
-            height: 75,
-            decoration: BoxDecoration(
-              color: widget.buttonColor ?? ThemeColors.primaryColor,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 8.0,
-                  spreadRadius: 2.0,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Icon(
-                widget.isRecording ? Icons.send : Icons.mic,
-                color: Colors.white,
-                size: 35,
-              ),
+        onTap: widget.onTap,
+        onLongPressStart: (_) => _onLongPressStart(),
+        onLongPressEnd: (_) => _onLongPressEnd(),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          width: _isButtonPressed ? 75 : 60,
+          height: _isButtonPressed ? 75 : 60,
+          decoration: BoxDecoration(
+            color: widget.buttonColor ?? ThemeColors.primaryColor,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Icon(
+              widget.isRecording ? Icons.send : Icons.mic,
+              size: 32,
+              color: Colors.white,
             ),
           ),
         ),
       );
     } else {
       return ElevatedButton(
-        onPressed: _onPressed,
+        onPressed: widget.onTap,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: widget.isRecording

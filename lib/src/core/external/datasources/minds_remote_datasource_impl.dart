@@ -181,6 +181,7 @@ class MindsRemoteDataSourceImpl implements MindsRemoteDataSource {
   @override
   Future<AudioResponse> convertAudio(AudioConvertRequest request) async {
     try {
+      //TODO: AJUSTAR ROTA
       final data = AudioRequestMapper.toMap(request);
       final response = await _httpClient.post(
         '',

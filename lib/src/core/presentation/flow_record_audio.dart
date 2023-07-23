@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lottie/lottie.dart';
 import 'package:minds_digital/minds_digital.dart';
@@ -107,6 +108,7 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
       }
       if (event.state is SuccessSdkInitState) {
         _store.fetchRandomSentence();
+        recordingHelper.hasPermissionMic();
       }
     });
   }
@@ -288,8 +290,23 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
   Widget buttonRecord(RecordingState recordState, FlowBiometricsState bloc) => PressAndHoldButton(
         isRecording: recordState.isRecording,
         buttonColor: style?.buttonColor,
-        onPressed: () async => recordAudio(recordState, bloc),
-        onReleased: () async => recordAudio(recordState, bloc),
+        onLongPressStart: () async => recordAudio(recordState, bloc),
+        onLongPressEnd: () async => recordAudio(recordState, bloc),
+        onTap: () async {
+          if (kIsWeb) {
+            recordAudio(recordState, bloc);
+            return;
+          }
+          Fluttertoast.showToast(
+            msg: "Segure para gravar, solte para enviar",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 2,
+            backgroundColor: ThemeColors.primaryColor,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        },
       );
 
   void recordAudio(RecordingState recordState, FlowBiometricsState bloc) async {

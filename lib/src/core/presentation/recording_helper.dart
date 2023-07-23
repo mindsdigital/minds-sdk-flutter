@@ -53,6 +53,9 @@ class RecordingHelper {
   Record record = Record();
   Timer? _timer;
 
+  Future<bool> hasPermissionMic() async => await record.hasPermission();
+  //TODO: AJUSTE PERMISSÃO
+
   Future<void> startRecord() async {
     Directory? directory;
     if (!kIsWeb) {

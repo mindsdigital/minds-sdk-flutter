@@ -1,0 +1,55 @@
+PODS:
+  - ffmpeg-kit-ios-full (5.1)
+  - ffmpeg_kit_flutter_full (5.1.0):
+    - ffmpeg_kit_flutter_full/full (= 5.1.0)
+    - Flutter
+  - ffmpeg_kit_flutter_full/full (5.1.0):
+    - ffmpeg-kit-ios-full (= 5.1)
+    - Flutter
+  - Flutter (1.0.0)
+  - fluttertoast (0.0.2):
+    - Flutter
+    - Toast
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - record (0.0.1):
+    - Flutter
+  - Toast (4.0.0)
+
+DEPENDENCIES:
+  - ffmpeg_kit_flutter_full (from `.symlinks/plugins/ffmpeg_kit_flutter_full/ios`)
+  - Flutter (from `Flutter`)
+  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - record (from `.symlinks/plugins/record/ios`)
+
+SPEC REPOS:
+  trunk:
+    - ffmpeg-kit-ios-full
+    - Toast
+
+EXTERNAL SOURCES:
+  ffmpeg_kit_flutter_full:
+    :path: ".symlinks/plugins/ffmpeg_kit_flutter_full/ios"
+  Flutter:
+    :path: Flutter
+  fluttertoast:
+    :path: ".symlinks/plugins/fluttertoast/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  record:
+    :path: ".symlinks/plugins/record/ios"
+
+SPEC CHECKSUMS:
+  ffmpeg-kit-ios-full: 4a02624db22a9ea1e92e3b6707bffe67c76f4aad
+  ffmpeg_kit_flutter_full: b68e3ec78737630f790d1eca5ea50f52044645ee
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  fluttertoast: fafc4fa4d01a6a9e4f772ecd190ffa525e9e2d9c
+  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  record: cae05d8dd3cdb1dea3511b20e5a5811a1ae00d0d
+  Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
+
+PODFILE CHECKSUM: 8e101fac9760a9fc2bf6ef04178c5d9c7f894567
+
+COCOAPODS: 1.12.1
