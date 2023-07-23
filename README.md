@@ -8,7 +8,7 @@ Ao executar no sistema Android, se você receber um erro indicando que `minSdkVe
 
 tente adicionar o seguinte trecho ao arquivo `<project_directory>/android/app/src/main/AndroidManifest.xml`:
 
-```
+```xml
 <manifest xmlns:tools="http://schemas.android.com/tools" ....... >
     <uses-sdk tools:overrideLibrary="com.arthenica.ffmpegkit.flutter, com.arthenica.ffmpegkit" />
 </manifest>
@@ -16,7 +16,7 @@ tente adicionar o seguinte trecho ao arquivo `<project_directory>/android/app/sr
 ### Configuração iOS
 
 Adicione as seguintes chaves ao seu arquivo **Info.plist**, localizado em `<project root>/ios/Runner/Info.plist`:
-  ```
+  ```ruby
   <key>NSMicrophoneUsageDescription</key>
   <string>Used to capture audio</string>
   ```

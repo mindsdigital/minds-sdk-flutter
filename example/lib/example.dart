@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:minds_digital/minds_digital.dart';
+import 'app_widget.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  MindsApiWrapper.initialize(
+    environment: Environment.sandbox,
+    token: 'token',
+  );
+  runApp(const AppWidget());
+}
 
 class Example extends StatelessWidget {
   const Example({super.key});
@@ -113,7 +123,7 @@ class Example extends StatelessWidget {
                       request: FlowRecordAudioRequest(
                         context: context,
                         biometricsRequest: const FlowBiometricsRequest(
-                          cpf: '094.303.650-02',
+                          cpf: '00000000000',
                           showDetails: true,
                         ),
                         processType: ProcessType.authentication,
@@ -173,7 +183,7 @@ class Example extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text("Custom Screen exmaple"),
+              child: const Text("Exemplo Custom builder"),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
@@ -182,7 +192,7 @@ class Example extends StatelessWidget {
                   request: FlowRecordAudioRequest(
                     context: context,
                     biometricsRequest: const FlowBiometricsRequest(
-                      cpf: '094.303.650-02',
+                      cpf: '00000000000',
                       showDetails: true,
                     ),
                     processType: ProcessType.authentication,
