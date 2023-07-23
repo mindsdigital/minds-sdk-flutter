@@ -54,7 +54,6 @@ class RecordingHelper {
   Timer? _timer;
 
   Future<bool> hasPermissionMic() async => await record.hasPermission();
-  //TODO: AJUSTE PERMISSÃO
 
   Future<void> startRecord() async {
     Directory? directory;
