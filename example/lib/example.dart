@@ -202,7 +202,7 @@ class Example extends StatelessWidget {
                   onError: (error) {
                     debugPrint("error: $error");
                   },
-                  style: const FlowStyle(),
+                  style: const FlowStyle(fullScreenDialog: true),
                 ).show(context);
               },
               child: const Text('Dialog'),

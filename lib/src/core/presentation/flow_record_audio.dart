@@ -137,6 +137,13 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
     super.dispose();
   }
 
+  Future<bool> onExit() async {
+    if (widget.exitEnabled) {
+      widget.onExit?.call();
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FlowBiometricsStore, FlowBiometricsState>(
@@ -160,15 +167,21 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
 
                   if (composition != null) {
                     if (style?.fullScreenDialog ?? false) {
-                      return Dialog.fullscreen(
-                        child: content(
-                            recordState, bloc, composition, style?.fullScreenDialog ?? false),
+                      return WillPopScope(
+                        onWillPop: onExit,
+                        child: Dialog.fullscreen(
+                          child: content(
+                              recordState, bloc, composition, style?.fullScreenDialog ?? false),
+                        ),
                       );
                     }
-                    return Dialog(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      child:
-                          content(recordState, bloc, composition, style?.fullScreenDialog ?? false),
+                    return WillPopScope(
+                      onWillPop: onExit,
+                      child: Dialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        child: content(
+                            recordState, bloc, composition, style?.fullScreenDialog ?? false),
+                      ),
                     );
                   }
                   return Center(
@@ -202,11 +215,7 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
               child: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: InkWell(
-                  onTap: widget.onExit != null
-                      ? () {
-                          Navigator.of(context).pop();
-                        }
-                      : null,
+                  onTap: widget.onExit ?? () => Navigator.of(context).pop(),
                   child: Image.asset(
                     AssetPaths.circleClose,
                     package: DesignSystemConstants.packageName,
