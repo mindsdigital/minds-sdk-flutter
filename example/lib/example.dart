@@ -113,7 +113,6 @@ class Example extends StatelessWidget {
               child: const Text("Certificação de biometria de voz "),
             ),
             const SizedBox(height: 10),
-            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () async {
                 Navigator.push(
@@ -198,7 +197,7 @@ class Example extends StatelessWidget {
                     processType: ProcessType.authentication,
                   ),
                   onResponse: (biometricsResponse) {
-                    debugPrint("response $biometricsResponse");
+                    debugPrint("response: $biometricsResponse");
                   },
                   onError: (error) {
                     debugPrint("error: $error");

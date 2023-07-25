@@ -139,8 +139,40 @@ FlowRecordAudio(
 
 <img src="https://raw.githubusercontent.com/mindsdigital/minds-sdk-flutter/main/assets/samples/dialog.png" width="320px"/>
 
-### Renderização em forma de tela usando CustomBuilder
+### Interface personalizada com Custom Builder
 
+title: Documentação do CustomBuilder
+
+O `CustomBuilder` é usado no widget `FlowRecordAudio` para permitir que a criação de uma interface personalizada para gravar áudio e lidar com os fluxos de biometria.
+
+### Assinatura
+
+```dart
+typedef CustomBuilder = Widget Function(
+  BuildContext context,
+  RecordingState recordingState,
+  FlowBiometricsState flowBiometricsState,
+  Widget recordButton,
+);
+```
+## Parâmetros
+
+A função `CustomBuilder` retorna os seguintes parâmetros:
+
+1. `context` (BuildContext): Um identificador para a localização de um widget na árvore de widgets.
+
+2. `recordingState` (RecordingState): Uma instância da classe `RecordingState`, que representa o estado atual da gravação de áudio. Isso inclui informações como a duração da gravação, se a gravação está ocorrendo atualmente.
+
+3. `flowBiometricsState` (FlowBiometricsState): Uma instância da classe `FlowBiometricsState`, que representa o estado atual do fluxo de biometria. Isso inclui informações como a resposta da frase aleatória e o estado geral do fluxo de biometria.
+
+4. `recordButton` (Widget): Um widget retornado que faz todo o processo de gravação, tratamento e envio de áudio para API. Ele é retornado no `CustomBuilder` como um widget e pode ser utilizado em qualquer lugar da tela.
+
+Esses parâmetros permitem que você crie uma interface personalizada de gravação de áudio com base no estado atual da gravação e no fluxo de biometria. O `recordingState` permite que você exiba informações relevantes sobre a gravação, como a duração atual. Já o `flowBiometricsState` permite que você mostre o estado atual do fluxo de biometria, incluindo detalhes sobre a frase aleatória. Além disso, o `recordButton` permite que você utilize o botão de gravação padrão para iniciar ou interromper a gravação de áudio.
+
+Com esses parâmetros em mãos, você tem a flexibilidade para criar uma experiência de usuário personalizada e sob medida para a sua aplicação, ao mesmo tempo que utiliza a funcionalidade essencial de gravação de áudio e fluxo de biometria fornecida pelo widget `FlowRecordAudio`.
+
+
+### Exemplo 
 ```dart
 Navigator.push(
   context,

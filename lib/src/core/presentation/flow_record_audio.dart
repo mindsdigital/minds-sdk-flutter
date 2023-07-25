@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_it/get_it.dart';
@@ -30,12 +31,14 @@ class FlowStyle {
   final Color? loadingColor;
   final Color? animationRecorderColor;
   final Color? buttonColor;
+  final bool fullScreenDialog;
   const FlowStyle({
     this.title,
     this.subtitle,
     this.loadingColor,
     this.animationRecorderColor,
     this.buttonColor,
+    this.fullScreenDialog = false,
   });
 }
 
@@ -92,13 +95,14 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
         isAuthentication: request.processType == ProcessType.authentication,
       );
   FlowStyle? get style => widget.style;
+  late final Future<LottieComposition> _composition;
 
   @override
   void initState() {
     super.initState();
+    _composition = _loadComposition();
     _store = GetIt.instance.get<FlowBiometricsStore>();
     _store.sdkInitValidator(initValidatorRequest);
-
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 4));
     _controller.repeat();
     _stream = _store.stream.listen((event) {
@@ -111,6 +115,13 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
         recordingHelper.hasPermissionMic();
       }
     });
+  }
+
+  Future<LottieComposition> _loadComposition() async {
+    final String asset =
+        'packages/${DesignSystemConstants.packageName}/${AssetPaths.lootieSpectro}';
+    var assetData = await rootBundle.load(asset);
+    return await LottieComposition.fromByteData(assetData);
   }
 
   @override
@@ -138,152 +149,190 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
                 buttonRecord(recordState, bloc),
               );
             }
-            return Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 700),
-                child: Stack(
-                  children: [
-                    Visibility(
-                      visible: !recordState.isRecording,
-                      child: Positioned(
-                        right: 10,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Image.asset(
-                              AssetPaths.circleClose,
-                              package: DesignSystemConstants.packageName,
-                              height: 30,
-                              width: 30,
-                            ),
-                          ),
-                        ),
-                      ),
+            return FutureBuilder<LottieComposition>(
+                future: _composition,
+                builder: (context, snapshot) {
+                  var composition = snapshot.data;
+
+                  if (composition != null) {
+                    if (style?.fullScreenDialog ?? false) {
+                      return Dialog.fullscreen(
+                        child: content(
+                            recordState, bloc, composition, style?.fullScreenDialog ?? false),
+                      );
+                    }
+                    return Dialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      child:
+                          content(recordState, bloc, composition, style?.fullScreenDialog ?? false),
+                    );
+                  }
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: style?.loadingColor != null
+                          ? style!.loadingColor!
+                          : ThemeColors.primaryColor,
                     ),
-                    if (bloc.state is LoadingState) ...[
-                      Center(
-                        child: CircularProgressIndicator(
-                          color: style?.loadingColor != null
-                              ? style!.loadingColor!
-                              : ThemeColors.primaryColor,
-                        ),
-                      )
-                    ],
-                    if (bloc.state is FailureFetchRandomSentenceState) ...[
-                      Center(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Falha ao carregar a frase",
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 18,
-                              ),
-                            ),
-                            TextButton.icon(
-                              onPressed: () async => await _store.fetchRandomSentence(),
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Tentar novammente'),
-                            )
-                          ],
-                        ),
-                      ),
-                    ] else ...[
-                      Visibility(
-                        visible: bloc.state is! LoadingState,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 45, 24, 45),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                style?.title != null
-                                    ? style!.title!
-                                    : request.processType == ProcessType.enrollment
-                                        ? "Cadastre sua voz"
-                                        : "Autentique sua voz",
-                                style: const TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                style?.subtitle != null
-                                    ? style!.subtitle!
-                                    : "Clique no microfone, diga a frase de segurança e envie sua biometria.",
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  color: ThemeColors.grey,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                bloc.randomSentence.sentence.text,
-                                style: const TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              if (recordState.isRecording) ...[
-                                const SizedBox(height: 20),
-                                Center(
-                                  child: SizedBox(
-                                    width: 200,
-                                    child: Lottie.asset(
-                                      AssetPaths.lootieSpectro,
-                                      controller: _controller,
-                                      animate: true,
-                                      onLoaded: (composition) {},
-                                      package: DesignSystemConstants.packageName,
-                                      repeat: true,
-                                      delegates: style?.animationRecorderColor != null
-                                          ? LottieDelegates(
-                                              values: [
-                                                ValueDelegate.color(
-                                                  const ['**'],
-                                                  value: style!.animationRecorderColor,
-                                                ),
-                                              ],
-                                            )
-                                          : null,
-                                    ),
-                                  ),
-                                ),
-                                Center(child: _buildTimer(recordState.recordDuration)),
-                              ],
-                              SizedBox(
-                                  height: recordState.isRecording
-                                      ? 25
-                                      : MediaQuery.of(context).size.height * 0.25),
-                              SizedBox(
-                                child: Center(child: buttonRecord(recordState, bloc)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
-                  ],
-                ),
-              ),
-            );
+                  );
+                });
           },
         );
       },
+    );
+  }
+
+  Widget content(
+    RecordingState recordState,
+    FlowBiometricsState bloc,
+    LottieComposition composition,
+    bool fullscreen,
+  ) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 700),
+      child: Stack(
+        children: [
+          Visibility(
+            visible: !recordState.isRecording,
+            child: Positioned(
+              right: 10,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Image.asset(
+                    AssetPaths.circleClose,
+                    package: DesignSystemConstants.packageName,
+                    height: 30,
+                    width: 30,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (bloc.state is LoadingState) ...[
+            Center(
+              child: CircularProgressIndicator(
+                color:
+                    style?.loadingColor != null ? style!.loadingColor! : ThemeColors.primaryColor,
+              ),
+            )
+          ],
+          if (bloc.state is FailureFetchRandomSentenceState) ...[
+            Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Falha ao carregar a frase",
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 18,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async => await _store.fetchRandomSentence(),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Tentar novammente'),
+                  )
+                ],
+              ),
+            ),
+          ] else ...[
+            Visibility(
+              visible: bloc.state is! LoadingState,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 45, 24, 45),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment:
+                      fullscreen ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center,
+                  mainAxisSize: fullscreen ? MainAxisSize.max : MainAxisSize.min,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          style?.title != null
+                              ? style!.title!
+                              : request.processType == ProcessType.enrollment
+                                  ? "Cadastre sua voz"
+                                  : "Autentique sua voz",
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          style?.subtitle != null
+                              ? style!.subtitle!
+                              : !kIsWeb
+                                  ? "Segure o botão para iniciar a gravação e leia o texto abaixo."
+                                  : "Clique no microfone, diga a frase de segurança e envie sua biometria.",
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: ThemeColors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                    Flexible(
+                      child: Text(
+                        bloc.randomSentence.sentence.text,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 25,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (recordState.isRecording) ...[
+                      const SizedBox(height: 20),
+                      Center(
+                        child: SizedBox(
+                          width: 200,
+                          child: Lottie(
+                            composition: composition,
+                            controller: _controller,
+                            animate: true,
+                            repeat: true,
+                            delegates: style?.animationRecorderColor != null
+                                ? LottieDelegates(
+                                    values: [
+                                      ValueDelegate.color(
+                                        const ['**'],
+                                        value: style!.animationRecorderColor,
+                                      ),
+                                    ],
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ),
+                      Center(child: _buildTimer(recordState.recordDuration)),
+                    ],
+                    SizedBox(
+                        height: recordState.isRecording
+                            ? 25
+                            : MediaQuery.of(context).size.height * 0.25),
+                    SizedBox(
+                      child: Center(child: buttonRecord(recordState, bloc)),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          ],
+        ],
+      ),
     );
   }
 
@@ -333,7 +382,7 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
               cpf: request.biometricsRequest.cpf,
               externalId: request.biometricsRequest.externalId,
               externalCustomerId: request.biometricsRequest.externalCustomerId,
-              extension: kIsWeb ? 'mp3' : 'ogg',
+              extension: kIsWeb ? 'flac' : 'ogg',
               phoneNumber: request.biometricsRequest.phoneNumber,
               showDetails: request.biometricsRequest.showDetails,
               sentenceId: bloc.randomSentence.sentence.text.isNotEmpty

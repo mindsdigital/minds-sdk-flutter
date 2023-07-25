@@ -181,12 +181,8 @@ class MindsRemoteDataSourceImpl implements MindsRemoteDataSource {
   @override
   Future<AudioResponse> convertAudio(AudioConvertRequest request) async {
     try {
-      //TODO: AJUSTAR ROTA
       final data = AudioRequestMapper.toMap(request);
-      final response = await _httpClient.post(
-        '',
-        data: data,
-      );
+      final response = await _httpClient.post(Endpoint.convert, data: data);
       return AudioResponseMapper.toObject(response.data);
     } on DioException catch (error, stackTrace) {
       if (error.response?.data is Map<String, dynamic>) {

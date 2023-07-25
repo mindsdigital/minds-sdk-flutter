@@ -8,4 +8,5 @@ class Endpoint {
   static String get phoneBlocklist => "/blocklist/phone-numbers";
   static String get randomSentence => "/liveness/random-sentence";
   static String get initValidator => "/biometrics/validate-sdk-init";
+  static String get convert => "/audio-validation/convert";
 }
