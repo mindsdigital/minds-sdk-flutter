@@ -9,6 +9,7 @@ class DetailsMapper {
       voiceMatch: map['voice_match'] != null
           ? VoiceMatchMapper.toObject(map['voice_match'] as Map<String, dynamic>)
           : null,
+      antiSpoofing: map['antispoofing'],
     );
   }
 }
