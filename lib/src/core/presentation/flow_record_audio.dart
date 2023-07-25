@@ -58,15 +58,19 @@ class FlowRecordAudio extends StatefulWidget {
   final FlowRecordAudioRequest request;
   final Function(BiometricsResponse) onResponse;
   final Function(Exception) onError;
+  final Function()? onExit;
   final FlowStyle? style;
   final CustomBuilder? customBuilder;
+  final bool exitEnabled;
   const FlowRecordAudio({
     super.key,
     required this.request,
     required this.onError,
     required this.onResponse,
-    this.style,
+    required this.style,
+    this.onExit,
     this.customBuilder,
+    this.exitEnabled = true,
   });
 
   @override
@@ -192,15 +196,17 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
       child: Stack(
         children: [
           Visibility(
-            visible: !recordState.isRecording,
+            visible: widget.exitEnabled && !recordState.isRecording,
             child: Positioned(
               right: 10,
               child: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                  },
+                  onTap: widget.onExit != null
+                      ? () {
+                          Navigator.of(context).pop();
+                        }
+                      : null,
                   child: Image.asset(
                     AssetPaths.circleClose,
                     package: DesignSystemConstants.packageName,
