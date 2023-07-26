@@ -1,5 +1,33 @@
-# Minds Digital
+# Visão Geral
 
+## Sobre este SDK
+
+O SDK Flutter da Minds Digital foi projetado para proporcionar uma integração rápida, simplificada e abstraída das jornadas de biometria de voz em suas aplicações Flutter.
+
+Nosso pacote fornece um wrapper da API que contém as funcionalidades já abstraídas, permitindo que você se concentre na lógica do seu aplicativo, em vez de se preocupar com a complexidade da manipulação e captura de áudio, integração com nossas APIs em nuvem e desenvolvimento das telas referentes aos fluxos mencionados.
+
+## Compatibilidade
+
+| Configuração | Versão mínima                           |
+| ------------ | --------------------------------------- |
+| Android      | Versão mínima do SDK Android igual a 19 |
+| iOS          | Versão 11 ou superior                   |
+
+## Funcionalidades disponíveis
+
+A SDK iOS da Minds Digital disponibiliza as seguintes funcionalidades:
+
+-   Cadastro de biometria de voz;
+-   Autenticação via biometria de voz;
+-   Customização da interface de forma dinâmica; 
+-  Wrapper
+    -  Adição de um telefone na blocklist;
+    -  Adição de uma voz na blocklist;
+    -  Verificação de biometria de voz;
+    -  Certificação de biometria de voz;
+
+
+> Observação: A utilização do pacote não obriga a usar o componente `FlowRecordAudioRequest`, que basicamente é o componente que possui a captura de áudio implementada. Se desejar, é possível utilizar apenas as chamadas do wrapper e construir sua própria interface. Outra opção é a utilização do custom builder, que permite personalizar a tela da forma que você desejar, mantendo o fluxo de captura de áudio que já está pronto.
 
 
 ### Configuração Android 
@@ -21,15 +49,15 @@ Adicione a seguinte chave ao seu arquivo **Info.plist**, localizado em `<project
   <string>Used to capture audio</string>
   ```
 
-## Using package
+## Usando o pacote
 
-In your Dart code, you can use:
+No seu código Dart, você pode usar:
 
 ```dart
 import 'package:minds_digital/minds_digital.dart';
 ```
 
-## Getting Started
+## Primeiros Passos
 ```dart
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -150,11 +178,11 @@ FlowRecordAudio(
     ),
     processType: ProcessType.authentication,
   ),
-  onResponse: (biometricsResponse) {
-    debugPrint("response $biometricsResponse");
+  onResponse: (BiometricsResponse response) {
+    // Lidar com a resposta da biometria aqui
   },
-  onError: (error) {
-    debugPrint("error: $error");
+  onError: (Exception error) {
+    // Lidar com os erros aqui
   },
   style: const FlowStyle(),
 ).show(context); // Método .show() exibe o widget como dialog na tela
@@ -227,9 +255,9 @@ typedef CustomBuilder = Widget Function(
   Widget recordButton,
 );
 ```
-## Parâmetros
+## Custom Builder
 
-A função `CustomBuilder` retorna os seguintes parâmetros:
+A função `CustomBuilder` é um typedef que representa uma função que retorna um `widget` e recebe os seguintes parâmetros:
 
 1. `context` (BuildContext): Um identificador para a localização de um widget na árvore de widgets.
 
