@@ -15,7 +15,7 @@ tente adicionar o seguinte trecho ao arquivo `<project_directory>/android/app/sr
 ```
 ### Configuração iOS
 
-Adicione as seguintes chaves ao seu arquivo **Info.plist**, localizado em `<project root>/ios/Runner/Info.plist`:
+Adicione a seguinte chave ao seu arquivo **Info.plist**, localizado em `<project root>/ios/Runner/Info.plist`:
   ```ruby
   <key>NSMicrophoneUsageDescription</key>
   <string>Used to capture audio</string>
@@ -33,9 +33,10 @@ import 'package:minds_digital/minds_digital.dart';
 ```dart
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+   // Inicialize a SDK com o ambiente desejado (sandbox, staging ou production)
   MindsApiWrapper.initialize(
     environment: Environment.staging,
-    token:'token',
+    token:'token', // Substitua "token" pelo token de acesso fornecido para a integração com a API.
   );
   runApp(const AppWidget());
 }
@@ -44,7 +45,11 @@ Future<void> main() async {
 ##  Utilização do Wrapper
 
 
-### Enrollment
+### Criação de biometria de voz
+
+* Criar/atualizar uma biometria por voz para um cliente
+
+Veja aqui os parâmetros que podem ser enviados na [documentação oficial](https://api.minds.digital/docs/api/rotas/biometria_voz/criacao_biometria).
 ```dart
 final response = await MindsApiWrapper.service.enrollment(
   request: const BiometricsRequest(
@@ -60,7 +65,12 @@ final response = await MindsApiWrapper.service.enrollment(
 ```
 
 
-### Authentication
+### Autenticação
+
+* Validar o processo de biometria de voz de um cliente que já possui uma biometria por voz cadastrada.
+  
+Veja aqui os parâmetros que podem ser enviados na [documentação oficial](https://api.minds.digital/docs/api/rotas/autenticacao_voz/criacao_autenticacao_voz).
+
 ```dart
 final response = await MindsApiWrapper.service.authentication(
   request: const BiometricsRequest(
@@ -75,8 +85,11 @@ final response = await MindsApiWrapper.service.authentication(
 );
 ```
 
-
 ### Adição de um telefone na blocklist
+
+Veja aqui os parâmetros que podem ser enviados na [documentação oficial](https://api.minds.digital/docs/api/rotas/blocklist/adicao_telefone).
+
+
 ```dart
 final response = await MindsApiWrapper.service.setPhoneBlocklist(
     request: const RequestPhoneBlocklist(
@@ -89,6 +102,12 @@ final response = await MindsApiWrapper.service.setPhoneBlocklist(
 ```
 
 ### Adição de uma voz na blocklist
+
+
+Veja aqui os parâmetros que podem ser enviados na [documentação oficial](https://api.minds.digital/docs/api/rotas/blocklist/adicao_voz).
+
+
+
 ```dart
 final response = await MindsApiWrapper.service.setVoiceBlocklist(
  request: const RequestVoiceBlocklist(
@@ -104,11 +123,15 @@ final response = await MindsApiWrapper.service.setVoiceBlocklist(
 
 ### Verificação de biometria de voz
 
+* Verificar se um cliente já possui biometria de voz.
+
 ```dart
 final response = await MindsApiWrapper.service.enrollmentVerify(cpf: "00000000000");
 ```
 
 ### Certificação de biometria de voz
+
+* Adicionar um cliente na lista de clientes confiáveis
 
 ```dart
 final response = await MindsApiWrapper.service.enrollmentCertify(cpf: "00000000000");
@@ -134,16 +157,65 @@ FlowRecordAudio(
     debugPrint("error: $error");
   },
   style: const FlowStyle(),
-).show(context);
+).show(context); // Método .show() exibe o widget como dialog na tela
 ```
-
 <img src="https://raw.githubusercontent.com/mindsdigital/minds-sdk-flutter/main/assets/samples/dialog.png" width="320px"/>
+
+#### Classe de Estilização: FlowStyle
+
+A classe `FlowStyle` é utilizada para definir o estilo e configurações visuais para a interface do widget `FlowRecordAudio`. Ela contém diversos parâmetros opcionais que permitem personalizar a aparência do componente de gravação de áudio e fluxo de biometria.
+
+### Propriedades
+
+A classe `FlowStyle` possui as seguintes propriedades:
+
+1. `title` (String?): Uma string opcional que define o título da interface de gravação de áudio.
+
+2. `subtitle` (String?): Uma string opcional que define o subtítulo da interface de gravação de áudio. Esse subtítulo pode ser usado para fornecer informações adicionais ou instruções ao usuário.
+
+3. `loadingColor` (Color?): Uma cor opcional que define a cor de loding
+
+4. `animationRecorderColor` (Color?): Uma cor opcional que define a cor utilizada na animação de gravação de áudio.
+
+5. `buttonColor` (Color?): Uma cor opcional que define a cor de destaque do botão de gravação de áudio. 
+
+6. `fullScreenDialog` (bool): Um valor booleano opcional que indica se a interface de gravação de áudio deve ser exibida como um diálogo em tela cheia (`true`) ou não (`false`). O valor padrão é `false`.
+
+
+
+### Exemplo de Uso
+
+Aqui está um exemplo de como utilizar a classe `FlowStyle` para personalizar a interface do widget `FlowRecordAudio`:
+
+```dart
+FlowRecordAudio(
+  request: FlowRecordAudioRequest(
+    biometricsRequest: biometricsRequest,
+    processType: processType,
+    context: context,
+  ),
+  onResponse: (BiometricsResponse response) {
+    // Lidar com a resposta da biometria aqui
+  },
+  onError: (Exception error) {
+    // Lidar com os erros aqui
+  },
+  style: FlowStyle(
+    title: 'Gravação de Áudio',
+    subtitle: 'Pressione o botão para começar a gravar',
+    loadingColor: Colors.blue,
+    animationRecorderColor: Colors.red,
+    buttonColor: Colors.green,
+    fullScreenDialog: true,
+  ),
+)
+```
 
 ### Interface personalizada com Custom Builder
 
-title: Documentação do CustomBuilder
-
 O `CustomBuilder` é usado no widget `FlowRecordAudio` para permitir que a criação de uma interface personalizada para gravar áudio e lidar com os fluxos de biometria.
+
+* Caso opte pela utilização do Custom Builder, não é necessário o uso do método show, visto que ele é utilizado apenas para renderizar um dialog padrão. Com o Custom Builder, você pode personalizar completamente a interface de gravação de áudio, incluindo a exibição em tela cheia ou em qualquer outra posição da tela.Caso opte pelo utilização do Custom Builder não é necessário a utilização do método show, visto que ele só é utilzado caso for para renderizar um dialog.
 
 ### Assinatura
 
