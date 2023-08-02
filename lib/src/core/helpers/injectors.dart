@@ -42,6 +42,9 @@ class Injectors {
   const Injectors(this.getIt);
 
   configure() {
+    if (getIt.isRegistered<MindsService>()) {
+      _uregister();
+    }
     final httpClient = Dio(BaseOptions(baseUrl: MindsApiWrapper.environment!.baseUrl))
       ..interceptors.add(CustomInterceptors());
 
@@ -84,5 +87,26 @@ class Injectors {
 
     getIt.registerFactory<FlowBiometricsStore>(
         () => FlowBiometricsStore(getIt(), getIt(), getIt(), getIt()));
+  }
+
+  _uregister() {
+    getIt.unregister<MindsRemoteDataSource>();
+    getIt.unregister<MindsRepository>();
+    getIt.unregister<VoiceAuthenticationUsecase>();
+    getIt.unregister<EnrollmentUsecase>();
+    getIt.unregister<SetPhoneBlocklistUsecase>();
+    getIt.unregister<SetVoiceBlocklistUsecase>();
+    getIt.unregister<EnrollmentVerifyUsecase>();
+    getIt.unregister<EnrollmentCertifyUsecase>();
+    getIt.unregister<FetchRandomSentenceUsecase>();
+    getIt.unregister<ConvertAudioToOggUsecase>();
+    getIt.unregister<FetchAudioDurationUsecase>();
+    getIt.unregister<DeleteAudioUsecase>();
+    getIt.unregister<FetchBase64HtmlBlobUsecase>();
+    getIt.unregister<ConvertAudioApiUsecase>();
+    getIt.unregister<DeleteLocalBlobUsecase>();
+    getIt.unregister<SDKInitValidatorUsecase>();
+    getIt.unregister<MindsService>();
+    getIt.unregister<FlowBiometricsStore>();
   }
 }

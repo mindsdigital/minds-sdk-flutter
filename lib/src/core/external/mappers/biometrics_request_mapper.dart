@@ -1,4 +1,5 @@
 import '../../domain/entities/biometrics_reponse/biometrics_request.dart';
+import '../../helpers/constants.dart';
 
 class BiometricsRequestMapper {
   static Map<String, dynamic> toMap(BiometricsRequest request) {
@@ -11,6 +12,7 @@ class BiometricsRequestMapper {
       "phone_number": request.phoneNumber,
       "show_details": request.showDetails,
       "sentence_id": request.sentenceId,
+      "source_name": MindsSDKConstants.sourceName,
     };
   }
 

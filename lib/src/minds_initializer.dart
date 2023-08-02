@@ -13,7 +13,7 @@ class MindsApiWrapper {
   static Environment? get environment => _environment;
   static MindsService get service => _getIt<MindsService>();
 
-  static void initialize({required String token, required Environment environment}) {
+  static void initialize({required String token, required Environment environment}) async {
     _token = token;
     _environment = environment;
     Injectors(_getIt).configure();
