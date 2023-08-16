@@ -1,6 +1,6 @@
 name: minds_digital
 description: O SDK Flutter da Minds Digital busca proporcionar de forma rápida, simplificada e abstraída as jornadas de autenticação e cadastro por meio da biometria de voz em suas aplicações Flutter.
-version: 0.0.7
+version: 0.0.8
 homepage: https://github.com/mindsdigital/minds-sdk-flutter
 
 environment:
@@ -19,9 +19,8 @@ dependencies:
   flutter_bloc: ^8.1.3
   result_dart: ^1.0.5
   equatable: ^2.0.5
-  ffmpeg_kit_flutter_full: ^5.1.0-LTS
+  ffmpeg_kit_flutter_audio: ^5.1.0-LTS
   uuid: ^3.0.7
-  universal_html: ^2.2.3
   fluttertoast: ^8.2.2
 
 dev_dependencies:

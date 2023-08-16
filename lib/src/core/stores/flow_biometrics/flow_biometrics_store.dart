@@ -6,20 +6,17 @@ import '../../../../minds_digital.dart';
 import '../../domain/entities/random_sentence/random_sentence_response.dart';
 import '../../domain/entities/validator_sdk/init_validator_request.dart';
 import '../../domain/usecases/delete_audio_usecase.dart';
-import '../../domain/usecases/delete_local_blob_audio_usecase.dart';
 import '../../domain/usecases/fetch_random_sentence_usecase.dart';
 part 'flow_biometrics_state.dart';
 
 class FlowBiometricsStore extends Cubit<FlowBiometricsState> {
   final FetchRandomSentenceUsecase _fetchRandomSentenceUsecase;
   final DeleteAudioUsecase _deleteAudioUsecase;
-  final DeleteLocalBlobUsecase _deleteLocalBlobUsecase;
   final SDKInitValidatorUsecase _sdkInitValidatorUsecase;
 
   FlowBiometricsStore(
     this._fetchRandomSentenceUsecase,
     this._deleteAudioUsecase,
-    this._deleteLocalBlobUsecase,
     this._sdkInitValidatorUsecase,
   ) : super(const FlowBiometricsState());
 
@@ -53,11 +50,7 @@ class FlowBiometricsStore extends Cubit<FlowBiometricsState> {
   }
 
   void deleteLocalAudio(String path) {
-    if (kIsWeb) {
-      _deleteLocalBlobUsecase(path);
-    } else {
-      _deleteAudioUsecase(path);
-    }
+    _deleteAudioUsecase(path);
   }
 
   Future<BiometricsResponse> sendAudio({

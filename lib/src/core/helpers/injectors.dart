@@ -1,16 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import '../domain/usecases/convert_audio_api_usecase_impl.dart';
-import '../domain/usecases/convert_audio_to_ogg_usecase.dart';
-import '../domain/usecases/convert_audio_to_ogg_usecase_impl.dart';
-import '../domain/usecases/delete_local_blob_audio_usecase_impl.dart';
-import '../domain/usecases/fetch_base64_html_blob_usecase_impl.dart';
 import '../../minds_initializer.dart';
 import '../domain/repositories/minds_repository.dart';
 import '../domain/usecases/convert_audio_api_usecase.dart';
+import '../domain/usecases/convert_audio_api_usecase_impl.dart';
+import '../domain/usecases/convert_audio_to_ogg_usecase.dart';
+import '../domain/usecases/convert_audio_to_ogg_usecase_impl.dart';
 import '../domain/usecases/delete_audio_usecase.dart';
 import '../domain/usecases/delete_audio_usecase_impl.dart';
-import '../domain/usecases/delete_local_blob_audio_usecase.dart';
 import '../domain/usecases/enrollment_certify_usecase.dart';
 import '../domain/usecases/enrollment_certify_usecase_impl.dart';
 import '../domain/usecases/enrollment_usecase.dart';
@@ -19,7 +16,6 @@ import '../domain/usecases/enrollment_verify_usecase.dart';
 import '../domain/usecases/enrollment_verify_usecase_impl.dart';
 import '../domain/usecases/fetch_audio_duration_usecase.dart';
 import '../domain/usecases/fetch_audio_duration_usecase_impl.dart';
-import '../domain/usecases/fetch_base64_html_blob_usecase.dart';
 import '../domain/usecases/fetch_random_sentence_usecase.dart';
 import '../domain/usecases/fetch_random_sentence_usecase_impl.dart';
 import '../domain/usecases/sdk_init_validator_usecase.dart';
@@ -74,19 +70,15 @@ class Injectors {
 
     getIt.registerFactory<DeleteAudioUsecase>(() => DeleteAudioUsecaseImpl());
 
-    getIt.registerFactory<FetchBase64HtmlBlobUsecase>(() => FetchBase64HtmlBlobUsecaseImpl());
-
     getIt.registerFactory<ConvertAudioApiUsecase>(() => ConvertAudioApiUsecaseImpl(getIt()));
-
-    getIt.registerFactory<DeleteLocalBlobUsecase>(() => DeleteLocalBlobUsecaseImpl());
 
     getIt.registerFactory<SDKInitValidatorUsecase>(() => SDKInitValidatorUsecaseImpl(getIt()));
 
     getIt.registerFactory<MindsService>(
         () => MindsService(getIt(), getIt(), getIt(), getIt(), getIt(), getIt()));
 
-    getIt.registerFactory<FlowBiometricsStore>(
-        () => FlowBiometricsStore(getIt(), getIt(), getIt(), getIt()));
+    getIt
+        .registerFactory<FlowBiometricsStore>(() => FlowBiometricsStore(getIt(), getIt(), getIt()));
   }
 
   _uregister() {
@@ -102,9 +94,7 @@ class Injectors {
     getIt.unregister<ConvertAudioToOggUsecase>();
     getIt.unregister<FetchAudioDurationUsecase>();
     getIt.unregister<DeleteAudioUsecase>();
-    getIt.unregister<FetchBase64HtmlBlobUsecase>();
     getIt.unregister<ConvertAudioApiUsecase>();
-    getIt.unregister<DeleteLocalBlobUsecase>();
     getIt.unregister<SDKInitValidatorUsecase>();
     getIt.unregister<MindsService>();
     getIt.unregister<FlowBiometricsStore>();

@@ -7,13 +7,10 @@ import 'package:get_it/get_it.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
-import '../domain/entities/audio/audio_convert_request.dart';
 import '../domain/usecases/convert_audio_api_usecase.dart';
 import '../domain/usecases/convert_audio_to_ogg_usecase.dart';
 import '../domain/usecases/delete_audio_usecase.dart';
-import '../domain/usecases/delete_local_blob_audio_usecase.dart';
 import '../domain/usecases/fetch_audio_duration_usecase_impl.dart';
-import '../domain/usecases/fetch_base64_html_blob_usecase.dart';
 import '../helpers/constants.dart';
 
 class RecordingState extends Equatable {
@@ -47,9 +44,7 @@ class RecordingHelper {
   ConvertAudioToOggUsecase convertAudioToOggUsecase = GetIt.instance.get();
   FetchAudioDurationUsecase fetchAudioDurationUsecase = GetIt.instance.get();
   DeleteAudioUsecase deleteAudioUsecase = GetIt.instance.get();
-  FetchBase64HtmlBlobUsecase fetchBase64HtmlBlobUsecase = GetIt.instance.get();
   ConvertAudioApiUsecase convertAudioApiUsecase = GetIt.instance.get();
-  DeleteLocalBlobUsecase deleteLocalBlobUsecase = GetIt.instance.get();
   Record record = Record();
   Timer? _timer;
 
@@ -76,29 +71,6 @@ class RecordingHelper {
     }
   }
 
-  Future<String?> _stopRecordWeb(String? path, int currentDuration) async {
-    if (path != null) {
-      recordState.value = recordState.value.copyWith(currentBlobUrl: path);
-      if (minLenghtVerify(currentDuration)) {
-        deleteLocalBlobUsecase(path);
-        return null;
-      }
-      final base64 = await fetchBase64HtmlBlobUsecase(path);
-      if (base64 != null) {
-        final response = await convertAudioApiUsecase(
-          AudioConvertRequest(
-            audio: base64,
-            format: 'webm',
-            nextFormat: 'flac',
-          ),
-        );
-        response.fold((result) => path = result.audio, (failure) {});
-      }
-      return path;
-    }
-    return null;
-  }
-
   Future<String?> _stopRecordMobile(String? path, int currentDuration) async {
     if (path != null) {
       if (minLenghtVerify(currentDuration)) {
@@ -118,11 +90,7 @@ class RecordingHelper {
     final isRecording = await record.isRecording();
     recordState.value = recordState.value.copyWith(isRecording: isRecording, currentBlobUrl: path);
     developer.log(path!);
-    if (kIsWeb) {
-      return _stopRecordWeb(path, currentDuration);
-    } else {
-      return _stopRecordMobile(path, currentDuration);
-    }
+    return _stopRecordMobile(path, currentDuration);
   }
 
   void _startTimer() {

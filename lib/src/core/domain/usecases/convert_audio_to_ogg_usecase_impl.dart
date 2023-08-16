@@ -1,9 +1,9 @@
+import 'dart:developer' as developer;
 import 'dart:io';
-import 'package:ffmpeg_kit_flutter_full/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_full/return_code.dart';
+import 'package:ffmpeg_kit_flutter_audio/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_audio/return_code.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:developer' as developer;
 import 'convert_audio_to_ogg_usecase.dart';
 
 class ConvertAudioToOggUsecaseImpl implements ConvertAudioToOggUsecase {
