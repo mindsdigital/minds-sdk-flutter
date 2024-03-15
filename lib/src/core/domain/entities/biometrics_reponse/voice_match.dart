@@ -1,9 +1,19 @@
-class VoiceMatch {
-  final String result;
-  final String confidence;
-  final String status;
-  const VoiceMatch({required this.result, required this.confidence, required this.status});
+import 'detection_result.dart';
 
-  @override
-  String toString() => 'VoiceMatch(result: $result, confidence: $confidence, status: $status)';
+class VoiceMatch extends DetectionResult {
+  const VoiceMatch({
+    required String? result,
+    required String? confidence,
+    required String? status,
+    required double? score,
+    required double? threshold,
+  }) : super(
+          result: result,
+          confidence: confidence,
+          status: status,
+          score: score,
+          threshold: threshold,
+        );
+
+  VoiceMatch.fromJson(Map<String, dynamic> json) : super.fromJson(json);
 }

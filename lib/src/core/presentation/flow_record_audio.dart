@@ -93,8 +93,9 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
   FlowRecordAudioRequest get request => widget.request;
   BuildContext get buildContext => request.context;
   InitValidatorRequest get initValidatorRequest => InitValidatorRequest(
-        cpf: request.biometricsRequest.cpf,
+        document: request.biometricsRequest.cpf,
         phoneNumber: request.biometricsRequest.phoneNumber ?? "",
+        phoneCountryCode: request.biometricsRequest.phoneCountryCode,
         rate: MindsSDKConstants.samplingRate,
         isAuthentication: request.processType == ProcessType.authentication,
       );
@@ -161,37 +162,49 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
               );
             }
             return FutureBuilder<LottieComposition>(
-                future: _composition,
-                builder: (context, snapshot) {
-                  var composition = snapshot.data;
+              future: _composition,
+              builder: (context, snapshot) {
+                var composition = snapshot.data;
 
-                  if (composition != null) {
-                    if (style?.fullScreenDialog ?? false) {
-                      return WillPopScope(
-                        onWillPop: onExit,
-                        child: Dialog.fullscreen(
-                          child: content(
-                              recordState, bloc, composition, style?.fullScreenDialog ?? false),
-                        ),
-                      );
-                    }
-                    return WillPopScope(
-                      onWillPop: onExit,
-                      child: Dialog(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                if (composition != null) {
+                  if (style?.fullScreenDialog ?? false) {
+                    return PopScope(
+                      canPop: false,
+                      onPopInvoked: (didPop) {
+                        if (didPop) {
+                          return;
+                        }
+                        widget.onExit?.call();
+                      },
+                      child: Dialog.fullscreen(
                         child: content(
                             recordState, bloc, composition, style?.fullScreenDialog ?? false),
                       ),
                     );
                   }
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: style?.loadingColor != null
-                          ? style!.loadingColor!
-                          : ThemeColors.primaryColor,
+                  return PopScope(
+                    onPopInvoked: (didPop) {
+                      if (didPop) {
+                        return;
+                      }
+                      widget.onExit?.call();
+                    },
+                    child: Dialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      child:
+                          content(recordState, bloc, composition, style?.fullScreenDialog ?? false),
                     ),
                   );
-                });
+                }
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: style?.loadingColor != null
+                        ? style!.loadingColor!
+                        : ThemeColors.primaryColor,
+                  ),
+                );
+              },
+            );
           },
         );
       },
@@ -319,16 +332,16 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
                             controller: _controller,
                             animate: true,
                             repeat: true,
-                            delegates: style?.animationRecorderColor != null
-                                ? LottieDelegates(
-                                    values: [
-                                      ValueDelegate.color(
-                                        const ['**'],
-                                        value: style!.animationRecorderColor,
-                                      ),
-                                    ],
-                                  )
-                                : null,
+                            delegates: LottieDelegates(
+                              values: [
+                                ValueDelegate.color(
+                                  const ['**'],
+                                  value: style?.animationRecorderColor != null
+                                      ? style!.animationRecorderColor
+                                      : ThemeColors.primaryColor,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -394,7 +407,7 @@ class _FlowRecordAudioState extends State<FlowRecordAudio> with TickerProviderSt
             processType: request.processType,
             request: BiometricsRequest(
               audio: kIsWeb ? path : await AudioHelper.convertPathToBase64(path),
-              cpf: request.biometricsRequest.cpf,
+              document: request.biometricsRequest.cpf,
               externalId: request.biometricsRequest.externalId,
               externalCustomerId: request.biometricsRequest.externalCustomerId,
               extension: kIsWeb ? 'flac' : 'ogg',

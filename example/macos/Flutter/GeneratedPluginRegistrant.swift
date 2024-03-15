@@ -5,7 +5,7 @@
 import FlutterMacOS
 import Foundation
 
-import ffmpeg_kit_flutter_full
+import ffmpeg_kit_flutter_audio
 import path_provider_foundation
 import record_macos
 
