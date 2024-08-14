@@ -1,18 +1,21 @@
 class InitValidatorRequest {
-  final String cpf;
+  final String document;
   final String phoneNumber;
+  final int? phoneCountryCode;
   final int rate;
   final bool isAuthentication;
   const InitValidatorRequest({
-    required this.cpf,
+    required this.document,
     required this.phoneNumber,
+    this.phoneCountryCode,
     required this.rate,
     required this.isAuthentication,
   });
 
   const InitValidatorRequest.empty()
-      : cpf = "",
+      : document = "",
         phoneNumber = "",
+        phoneCountryCode = null,
         rate = 0,
         isAuthentication = false;
 }

@@ -14,6 +14,7 @@ class BiometricsResponseMapper {
       cpf: map['cpf'],
       externalId: map['external_id'],
       createdAt: map['created_at'],
+      utCreatedAt: map["utc_created_at"],
       result: map['result'] != null
           ? ResultMapper.toObject(map['result'] as Map<String, dynamic>)
           : null,

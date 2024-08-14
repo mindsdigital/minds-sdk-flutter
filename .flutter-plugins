@@ -1,11 +1,11 @@
 # This is a generated file; do not edit or check into version control.
 ffmpeg_kit_flutter_audio=/Users/wennys/.pub-cache/hosted/pub.dev/ffmpeg_kit_flutter_audio-5.1.0/
-fluttertoast=/Users/wennys/.pub-cache/hosted/pub.dev/fluttertoast-8.2.2/
-path_provider=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider-2.0.15/
-path_provider_android=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider_android-2.0.27/
-path_provider_foundation=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider_foundation-2.2.4/
-path_provider_linux=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider_linux-2.1.11/
-path_provider_windows=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider_windows-2.1.7/
+fluttertoast=/Users/wennys/.pub-cache/hosted/pub.dev/fluttertoast-8.2.4/
+path_provider=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider-2.1.1/
+path_provider_android=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider_android-2.2.2/
+path_provider_foundation=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider_foundation-2.3.1/
+path_provider_linux=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
+path_provider_windows=/Users/wennys/.pub-cache/hosted/pub.dev/path_provider_windows-2.2.1/
 record=/Users/wennys/.pub-cache/hosted/pub.dev/record-4.4.4/
 record_linux=/Users/wennys/.pub-cache/hosted/pub.dev/record_linux-0.4.1/
 record_macos=/Users/wennys/.pub-cache/hosted/pub.dev/record_macos-0.2.2/

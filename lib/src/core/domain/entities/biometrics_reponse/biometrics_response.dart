@@ -9,6 +9,7 @@ class BiometricsResponse {
   final String? cpf;
   final String? externalId;
   final String? createdAt;
+  final String? utCreatedAt;
   final Result? result;
   final Details? details;
   final Map<String, dynamic> rawResponse;
@@ -19,6 +20,7 @@ class BiometricsResponse {
     required this.cpf,
     required this.externalId,
     required this.createdAt,
+    required this.utCreatedAt,
     required this.result,
     required this.details,
     required this.rawResponse,
@@ -26,6 +28,6 @@ class BiometricsResponse {
 
   @override
   String toString() {
-    return 'BiometricsResponse(success: $success, error: $error, id: $id, cpf: $cpf, externalId: $externalId, createdAt: $createdAt, result: $result, details: $details, rawResponse: $rawResponse)';
+    return 'BiometricsResponse(success: $success, error: $error, id: $id, cpf: $cpf, externalId: $externalId, createdAt: $createdAt, utCreatedAt: $utCreatedAt, result: $result, details: $details, rawResponse: $rawResponse)';
   }
 }

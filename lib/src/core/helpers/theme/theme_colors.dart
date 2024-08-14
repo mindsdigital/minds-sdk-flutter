@@ -7,5 +7,5 @@ class ThemeColors {
 
   static Color get grey => const Color(0xff5F5F5F);
 
-  static Color get primaryColor => const Color(0xff1ddaaa);
+  static Color get primaryColor => const Color(0xff0055FF);
 }

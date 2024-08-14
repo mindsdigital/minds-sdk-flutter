@@ -4,9 +4,9 @@ import '../../helpers/constants.dart';
 class InitValidatorRequestMapper {
   static Map<String, dynamic> toMap(InitValidatorRequest request) {
     return {
-      "cpf": request.cpf,
+      "document": {"value": request.document},
       "phone_number": request.phoneNumber,
-      "extension": MindsSDKConstants.defaultExtension,
+      "phone_country_code": request.phoneCountryCode,
       "rate": MindsSDKConstants.samplingRate,
       "check_for_verification": request.isAuthentication,
     };

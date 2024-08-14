@@ -5,8 +5,8 @@ import 'app_widget.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MindsApiWrapper.initialize(
-    environment: Environment.sandbox,
-    token: 'token',
+    environment: Environment.staging,
+    token: "",
   );
   runApp(const AppWidget());
 }
@@ -33,7 +33,7 @@ class Example extends StatelessWidget {
                 final response = await MindsApiWrapper.service.enrollment(
                   request: const BiometricsRequest(
                     audio: "SW4gY29tcHV0ZXIgcHJvZ3JhbW1pbmcsIEJhc2U2NCB",
-                    cpf: '00000000000',
+                    document: '00000000000',
                     externalId: '123',
                     externalCustomerId: '123',
                     extension: 'ogg',
@@ -51,7 +51,7 @@ class Example extends StatelessWidget {
                 final response = await MindsApiWrapper.service.authentication(
                   request: const BiometricsRequest(
                     audio: "SW4gY29tcHV0ZXIgcHJvZ3JhbW1pbmcsIEJhc2U2NCB",
-                    cpf: '00000000000',
+                    document: '00000000000',
                     externalId: '123',
                     externalCustomerId: '123',
                     extension: 'ogg',
@@ -124,6 +124,8 @@ class Example extends StatelessWidget {
                         biometricsRequest: const FlowBiometricsRequest(
                           cpf: '00000000000',
                           showDetails: true,
+                          phoneCountryCode: 55,
+                          phoneNumber: "000000000",
                         ),
                         processType: ProcessType.authentication,
                       ),
@@ -133,6 +135,7 @@ class Example extends StatelessWidget {
                       onError: (error) {
                         debugPrint("error: $error");
                       },
+                      onExit: () {},
                       style: const FlowStyle(),
                       customBuilder: (context, recordingState, flowBiometricsState, buttonRecord) =>
                           Scaffold(
@@ -191,7 +194,7 @@ class Example extends StatelessWidget {
                   request: FlowRecordAudioRequest(
                     context: context,
                     biometricsRequest: const FlowBiometricsRequest(
-                      cpf: '00000000000',
+                      cpf: '07825529197',
                       showDetails: true,
                     ),
                     processType: ProcessType.authentication,
@@ -201,6 +204,9 @@ class Example extends StatelessWidget {
                   },
                   onError: (error) {
                     debugPrint("error: $error");
+                  },
+                  onExit: () {
+                    Navigator.of(context).pop();
                   },
                   style: const FlowStyle(fullScreenDialog: true),
                 ).show(context);
